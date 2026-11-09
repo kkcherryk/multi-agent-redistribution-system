@@ -2,12 +2,13 @@
 (function () {
   const cfg = window.PORTAL;
   const $ = (id) => document.getElementById(id);
-  const STATUS_LABEL = { under_review: "Under review", on_hold: "On hold", verified: "Verified", declined: "Declined" };
+  const STATUS_LABEL = { applicant: "Not submitted", under_review: "Under review", on_hold: "On hold", verified: "Verified", declined: "Declined" };
 
   async function api(path, opts = {}) {
+    const isForm = opts.body instanceof FormData;  // let the browser set the multipart boundary
     const res = await fetch("/api" + path, {
       credentials: "same-origin",
-      headers: { "Content-Type": "application/json" },
+      headers: isForm ? {} : { "Content-Type": "application/json" },
       ...opts,
     });
     if (res.status === 204) return null;
@@ -31,6 +32,19 @@
     return el("span", { class: "status " + status }, STATUS_LABEL[status] || status);
   }
 
+  // Module 5 status marks. Verified marks carry a tick; colours come from the core service.
+  function badge(b) {
+    if (!b) return el("span");
+    const tick = ["Verified", "Verified NGO"].includes(b.label) ? "✔ " : (b.label === "Available" ? "● " : (b.label === "Unavailable" ? "● " : ""));
+    return el("span", { class: "badge " + b.color, title: b.label }, tick + b.label);
+  }
+
+  function badgeRow(badges) {
+    const wrap = el("span", { class: "badges" });
+    for (const key of ["verification", "availability"]) if (badges && badges[key]) wrap.append(badge(badges[key]));
+    return wrap;
+  }
+
   function showMsg(id, text, ok) {
     const m = $(id);
     m.textContent = text;
@@ -50,17 +64,23 @@
     $("welcome").textContent = "Welcome, " + acc.display_name;
     const dl = $("profile");
     dl.replaceChildren();
-    const rows = [["Role", acc.role], ["Email", acc.email], ["Phone", acc.phone || "—"], ["Account status", null],
+    const rows = [["Role", acc.role], ["Email", acc.email], ["Phone", acc.phone || "—"], ["Application", "status"],
                   ["Member since", new Date(acc.created_at).toLocaleString()]];
+    if (acc.badges && Object.keys(acc.badges).length) rows.splice(4, 0, ["Status marks", "badges"]);
     for (const [k, v] of rows) {
       dl.append(el("dt", {}, k));
       const dd = el("dd");
-      if (v === null) dd.append(statusChip(acc.status)); else dd.textContent = v;
+      if (v === "status") dd.append(statusChip(acc.status));
+      else if (v === "badges") dd.append(badgeRow(acc.badges));
+      else dd.textContent = v;
       dl.append(dd);
     }
-    $("pending-note").classList.toggle("hidden", acc.status === "verified");
-    if (cfg.onSignedIn) cfg.onSignedIn(acc, { api, el, statusChip });
+    if (cfg.onSignedIn) cfg.onSignedIn(acc, ui);
   }
+
+  const ui = { api, el, statusChip, badge, badgeRow, showMsg,
+               refreshMe: async () => renderProfile(await api("/me")) };
+  window.FRS = ui;
 
   function renderSignedOut() {
     $("auth").classList.remove("hidden");

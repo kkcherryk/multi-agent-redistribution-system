@@ -65,6 +65,7 @@ class AccountOut(BaseModel):
     phone: str | None
     status: str
     created_at: datetime
+    badges: dict = Field(default_factory=dict)
 
 
 class EventOut(BaseModel):
@@ -77,3 +78,49 @@ class EventOut(BaseModel):
     subject_id: str | None
     payload: dict
     created_at: datetime
+
+
+def _required_text(max_len: int):
+    return Field(min_length=2, max_length=max_len)
+
+
+class _ProfileBase(BaseModel):
+    address: str = _required_text(300)
+    latitude: float = Field(ge=-90, le=90)
+    longitude: float = Field(ge=-180, le=180)
+    additional_info: str | None = Field(default=None, max_length=2000)
+
+    @field_validator("*", mode="before")
+    @classmethod
+    def _strip(cls, v):
+        return v.strip() if isinstance(v, str) else v
+
+    @field_validator("additional_info")
+    @classmethod
+    def _empty_to_none(cls, v):
+        return v or None
+
+
+class RestaurantProfileIn(_ProfileBase):
+    applicant_name: str = _required_text(120)
+    restaurant_name: str = _required_text(120)
+    licence_number: str = _required_text(60)
+
+
+class NgoProfileIn(_ProfileBase):
+    ngo_name: str = _required_text(120)
+    ngo_registration_id: str = _required_text(60)
+    representative_name: str = _required_text(120)
+
+
+PROFILE_SCHEMAS = {"restaurant": RestaurantProfileIn, "ngo": NgoProfileIn}
+
+
+class AvailabilityIn(BaseModel):
+    available: bool
+
+
+class ReviewIn(BaseModel):
+    decision: str
+    note: str | None = Field(default=None, max_length=2000)
+    reviewer_id: str | None = Field(default=None, max_length=32)

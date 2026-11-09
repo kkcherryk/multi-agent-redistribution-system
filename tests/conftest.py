@@ -16,8 +16,8 @@ HOST_EMAIL, HOST_PASSWORD = "host@frs.test", "host-test-pass-1"
 
 
 @pytest.fixture
-def core_app():
-    app = create_core_app("sqlite://", SERVICE_KEYS)
+def core_app(tmp_path):
+    app = create_core_app("sqlite://", SERVICE_KEYS, upload_dir=tmp_path / "uploads")
     with sessionmaker(app.state.engine)() as s:
         accounts.create_account(s, role="host", email=HOST_EMAIL, password=HOST_PASSWORD, display_name="Test Host")
         s.commit()

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, FastAPI, HTTPException, Request, Response
+from fastapi import APIRouter, Depends, FastAPI, File, Form, HTTPException, Request, Response, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -14,6 +14,7 @@ from shared.core_client import CoreClient, CoreError, CoreUnavailable
 from shared.security import decode_session_token, issue_session_token
 
 COMMON_STATIC = Path(__file__).resolve().parent / "common_static"
+MAX_UPLOAD_BYTES = 5 * 1024 * 1024
 
 
 class LoginIn(BaseModel):
@@ -99,6 +100,37 @@ def create_portal_app(*, portal: str, core: CoreClient, jwt_secret: str, static_
     def me(account: dict = Depends(current_account)):
         return account
 
+    if allow_registration:  # applicant portals (restaurant, NGO): onboarding for the signed-in account only
+        @api.get("/onboarding")
+        def get_onboarding(account: dict = Depends(current_account)):
+            return core.get_onboarding(account["id"])
+
+        @api.put("/profile")
+        def put_profile(body: dict, account: dict = Depends(current_account)):
+            return core.put_profile(account["id"], body)
+
+        @api.post("/documents", status_code=201)
+        async def upload_document(kind: str = Form(..., max_length=40), file: UploadFile = File(...),
+                                  account: dict = Depends(current_account)):
+            data = await file.read(MAX_UPLOAD_BYTES + 1)
+            if len(data) > MAX_UPLOAD_BYTES:
+                raise HTTPException(status_code=413, detail="the file is larger than 5 MB")
+            return core.upload_document(account["id"], kind, file.filename or "upload", data, file.content_type)
+
+        @api.delete("/documents/{doc_id}", status_code=204)
+        def delete_document(doc_id: str, account: dict = Depends(current_account)):
+            core.delete_document(account["id"], doc_id)
+            return Response(status_code=204)
+
+        @api.get("/documents/{doc_id}")
+        def document(doc_id: str, account: dict = Depends(current_account)):
+            data, ctype = core.document_content(doc_id, account_id=account["id"])
+            return document_response(data, ctype)
+
+        @api.post("/submit")
+        def submit(account: dict = Depends(current_account)):
+            return core.submit_application(account["id"])
+
     app.include_router(api)
 
     @app.get("/health")
@@ -118,6 +150,13 @@ def create_portal_app(*, portal: str, core: CoreClient, jwt_secret: str, static_
         return FileResponse(static_dir / "index.html")
 
     return app
+
+
+def document_response(data: bytes, content_type: str) -> Response:
+    # nosniff + a sandboxing CSP so an uploaded file can never run script in the portal's origin.
+    return Response(data, media_type=content_type, headers={
+        "X-Content-Type-Options": "nosniff", "Cache-Control": "private, no-store",
+        "Content-Security-Policy": "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; sandbox"})
 
 
 def default_core_client(portal: str) -> tuple[CoreClient, object]:

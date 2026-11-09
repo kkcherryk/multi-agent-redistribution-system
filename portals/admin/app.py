@@ -4,11 +4,17 @@ from __future__ import annotations
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, Query
+from pydantic import BaseModel, Field
 
-from portals.common import create_portal_app, default_core_client
+from portals.common import create_portal_app, default_core_client, document_response
 from shared.core_client import CoreClient
 
 STATIC = Path(__file__).resolve().parent / "static"
+
+
+class ReviewIn(BaseModel):
+    decision: str = Field(max_length=20)
+    note: str | None = Field(default=None, max_length=2000)
 
 
 def create_admin_app(core: CoreClient, jwt_secret: str, **kwargs) -> FastAPI:
@@ -23,6 +29,28 @@ def create_admin_app(core: CoreClient, jwt_secret: str, **kwargs) -> FastAPI:
     @app.get("/api/events")
     def events(limit: int = Query(default=50, ge=1, le=500), _: dict = Depends(host)):
         return core.list_events(limit=limit)
+
+    # ---- Phase 2: verification queue, decisions, evidence viewer, agent directory
+    @app.get("/api/review-queue")
+    def review_queue(status: str = "under_review", _: dict = Depends(host)):
+        return core.review_queue(status)
+
+    @app.get("/api/accounts/{account_id}/onboarding")
+    def onboarding(account_id: str, _: dict = Depends(host)):
+        return core.get_onboarding(account_id)
+
+    @app.post("/api/accounts/{account_id}/review")
+    def review(account_id: str, body: ReviewIn, me: dict = Depends(host)):
+        return core.review(account_id, body.decision, body.note, reviewer_id=me["id"])
+
+    @app.get("/api/documents/{doc_id}")
+    def document(doc_id: str, _: dict = Depends(host)):
+        data, ctype = core.document_content(doc_id)
+        return document_response(data, ctype)
+
+    @app.get("/api/ngo-directory")
+    def ngo_directory(_: dict = Depends(host)):
+        return core.ngo_directory()
 
     return app
 

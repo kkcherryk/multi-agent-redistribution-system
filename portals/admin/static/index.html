@@ -17,32 +17,27 @@
     </form><p class="note">Host accounts are created and managed by the project team.</p>
   </section>
   <section id="dashboard" class="hidden">
-    <div class="panel"><h2 id="welcome"></h2><dl id="profile"></dl>
-      <p id="pending-note" class="note hidden"></p></div>
-    <div class="panel"><h2>Accounts</h2><div class="table-wrap"><table><thead><tr><th>Name</th><th>Role</th><th>Email</th><th>Status</th><th>Created</th></tr></thead><tbody id="accounts"></tbody></table></div></div>
-    <div class="panel"><h2>Recent activity</h2><div class="table-wrap"><table><thead><tr><th>Time</th><th>Event</th><th>Portal</th><th>Subject</th></tr></thead><tbody id="events"></tbody></table></div></div>
+    <div class="panel"><h2 id="welcome"></h2><dl id="profile"></dl></div>
+    <div class="section-tabs" id="admin-tabs">
+      <button type="button" data-tab="queue" class="active">Review queue <span id="queue-count"></span></button>
+      <button type="button" data-tab="agents">NGO agent directory</button>
+      <button type="button" data-tab="accounts">All accounts</button>
+      <button type="button" data-tab="events">Activity</button>
+    </div>
+    <div id="tab-queue" class="panel"><h2>Applications waiting for review</h2>
+      <div class="row" style="margin-bottom:12px"><label for="queue-status" style="margin:0">Show</label>
+        <select id="queue-status" style="width:auto"><option value="under_review">Under review</option>
+        <option value="on_hold">On hold (waiting for applicant)</option><option value="verified">Verified</option>
+        <option value="declined">Declined</option><option value="applicant">Not submitted</option></select></div>
+      <div id="queue"></div></div>
+    <div id="tab-agents" class="panel hidden"><h2>NGO agents</h2><div class="table-wrap"><table><thead><tr><th>NGO</th><th>Representative</th><th>Phone</th><th>Verification</th><th>Availability</th><th>Location</th></tr></thead><tbody id="agents"></tbody></table></div></div>
+    <div id="tab-accounts" class="panel hidden"><h2>Accounts</h2><div class="table-wrap"><table><thead><tr><th>Name</th><th>Role</th><th>Email</th><th>Application</th><th>Status marks</th><th>Created</th></tr></thead><tbody id="accounts"></tbody></table></div></div>
+    <div id="tab-events" class="panel hidden"><h2>Recent activity</h2><div class="table-wrap"><table><thead><tr><th>Time</th><th>Event</th><th>Portal</th><th>Subject</th></tr></thead><tbody id="events"></tbody></table></div></div>
   </section>
 </main>
 <script>
 window.PORTAL = { title: 'Host Admin Portal' };
-window.PORTAL.onSignedIn = async (acc, ui) => {
-  const [accounts, events] = await Promise.all([ui.api("/accounts"), ui.api("/events?limit=25")]);
-  const byId = Object.fromEntries(accounts.map((a) => [a.id, a.display_name]));
-  const tb = document.getElementById("accounts"); tb.replaceChildren();
-  for (const a of accounts) {
-    const tr = ui.el("tr");
-    tr.append(ui.el("td", {}, a.display_name), ui.el("td", {}, a.role), ui.el("td", {}, a.email));
-    const st = ui.el("td"); st.append(ui.statusChip(a.status)); tr.append(st);
-    tr.append(ui.el("td", {}, new Date(a.created_at).toLocaleString())); tb.append(tr);
-  }
-  const te = document.getElementById("events"); te.replaceChildren();
-  for (const ev of events) {
-    const tr = ui.el("tr");
-    tr.append(ui.el("td", {}, new Date(ev.created_at).toLocaleString()), ui.el("td", {}, ev.type),
-              ui.el("td", {}, ev.portal || "—"), ui.el("td", {}, byId[ev.subject_id] || ev.subject_id || "—"));
-    te.append(tr);
-  }
-};
 </script>
+<script src="/static/portal/admin.js"></script>
 <script src="/static/common/portal.js"></script>
 </body></html>
