@@ -52,6 +52,15 @@ def create_admin_app(core: CoreClient, jwt_secret: str, **kwargs) -> FastAPI:
     def ngo_directory(_: dict = Depends(host)):
         return core.ngo_directory()
 
+    # ---- Phase 3: all food listings for host oversight
+    @app.get("/api/listings")
+    def listings(status: str | None = None, _: dict = Depends(host)):
+        return core.all_listings(status)
+
+    @app.get("/api/listings/{listing_id}/photo")
+    def listing_photo(listing_id: str, _: dict = Depends(host)):
+        return document_response(*core.listing_photo(listing_id))
+
     return app
 
 

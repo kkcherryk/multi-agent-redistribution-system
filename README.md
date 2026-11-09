@@ -34,6 +34,16 @@ The phased roadmap is in [PHASES.md](PHASES.md).
 * Badges (Module 5): restaurant blue *Verified* / orange *Unverified* or *On hold*; NGO green *Verified NGO*;
   agent green *Available* / red *Unavailable*.
 
+## Phase 3: food listings and nearby alerts
+
+* A verified restaurant posts food: type, quantity (portions/kg), veg/non-veg, condition, preparation and expiry
+  time, a photo and pickup notes.
+* Verified, available NGO agents within 5 km are alerted. Their "Nearby food" feed (refreshed every 15 s) shows
+  distance and time left.
+* The first agent to accept gets the pickup; nobody else can take it. The restaurant sees who is collecting, and
+  the agent gets the restaurant's contact details.
+* The host's "Food listings" tab shows every listing, its status and how many agents were alerted.
+
 ## Run it
 
 ```bash

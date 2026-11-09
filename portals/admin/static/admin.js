@@ -135,13 +135,34 @@
     }
   }
 
+  async function loadListings() {
+    const rows = await ui.api("/listings");
+    const tb = $("listings");
+    tb.replaceChildren();
+    const fmt = (iso) => new Date(iso).toLocaleString([], { dateStyle: "short", timeStyle: "short" });
+    for (const l of rows) {
+      const tr = ui.el("tr");
+      const food = ui.el("a", { href: `/api/listings/${l.id}/photo`, target: "_blank", rel: "noopener" }, l.food_type);
+      const a = l.assignment;
+      tr.append(td(fmt(l.created_at)), td(l.restaurant.name), td(food), td(`${l.quantity} ${l.unit}`),
+                td(fmt(l.expires_at)), td(ui.statusChip(l.status)), td(String(l.notified_agents)),
+                td(a ? `${a.representative_name} (${a.ngo_name})` : "—"));
+      tb.append(tr);
+    }
+    if (!rows.length) {
+      const tr = ui.el("tr");
+      tr.append(td("No food listings yet."));
+      tb.append(tr);
+    }
+  }
+
   async function loadAll() {
-    await Promise.all([loadQueue(), loadAgents(), loadAccounts()]);
+    await Promise.all([loadQueue(), loadAgents(), loadAccounts(), loadListings()]);
   }
 
   function showTab(name) {
     for (const b of document.querySelectorAll("#admin-tabs button")) b.classList.toggle("active", b.dataset.tab === name);
-    for (const t of ["queue", "agents", "accounts", "events"]) $("tab-" + t).classList.toggle("hidden", t !== name);
+    for (const t of ["queue", "listings", "agents", "accounts", "events"]) $("tab-" + t).classList.toggle("hidden", t !== name);
   }
 
   window.PORTAL.onSignedIn = (acc, helpers) => {

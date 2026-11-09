@@ -16,9 +16,10 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from shared.config import DATA_DIR, PORTAL_ROLE, ROLES
 
-from . import accounts, onboarding
+from . import accounts, listings, onboarding
+from .listings_api import build_router as build_listings_router
 from .db import make_engine
-from .models import Account, AccountStatus, Base, Document, Event, NgoProfile
+from .models import Account, AccountStatus, Base, Document, Event, FoodListing, NgoProfile
 from .schemas import (PROFILE_SCHEMAS, AccountOut, AvailabilityIn, CredentialsIn, EventOut, RegisterIn,
                       ReviewIn)
 
@@ -32,13 +33,14 @@ def account_out(account: Account, ngo_profile: NgoProfile | None = None) -> dict
     return data
 
 
-def create_core_app(db_url: str, service_keys: dict[str, str], upload_dir: Path | None = None) -> FastAPI:
+def create_core_app(db_url: str, service_keys: dict[str, str], upload_dir: Path | None = None,
+                    match_radius_km: float = listings.DEFAULT_RADIUS_KM) -> FastAPI:
     engine = make_engine(db_url)
     Base.metadata.create_all(engine)
     SessionLocal = sessionmaker(engine, expire_on_commit=False)
     upload_dir = Path(upload_dir or DATA_DIR / "uploads")
 
-    app = FastAPI(title="FRS Core Data Service", version="0.2.0")
+    app = FastAPI(title="FRS Core Data Service", version="0.3.0")
     app.state.engine = engine
     app.state.SessionLocal = SessionLocal
     app.state.upload_dir = upload_dir
@@ -207,6 +209,11 @@ def create_core_app(db_url: str, service_keys: dict[str, str], upload_dir: Path 
             raise HTTPException(status_code=403, detail="availability is set from the NGO portal")
         account = own_account(db, account_id, portal)
         profile = onboarding.set_availability(db, account, body.available, portal=portal)
+        if body.available and account.status == AccountStatus.VERIFIED:
+            # Alert a newly available agent about food already waiting nearby (notify_nearby skips duplicates).
+            listings.expire_due(db)
+            for active in db.scalars(select(FoodListing).where(FoodListing.status == listings.ListingStatus.ACTIVE)):
+                listings.notify_nearby(db, active, match_radius_km)
         db.commit()
         return account_out(account, profile)
 
@@ -243,6 +250,9 @@ def create_core_app(db_url: str, service_keys: dict[str, str], upload_dir: Path 
             rows.append({"account": account_out(a, p), "profile": onboarding.profile_dict(p)})
         return rows
 
+    # ------------------------------------------------------------------ Phase 3: food listings & matching
+    app.include_router(build_listings_router(get_db=get_db, caller_portal=caller_portal, require_admin=require_admin,
+                                             upload_dir=upload_dir / "listings", radius_km=match_radius_km))
     return app
 
 

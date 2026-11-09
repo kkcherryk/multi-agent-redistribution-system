@@ -6,7 +6,7 @@ from pathlib import Path
 from fastapi import Depends, FastAPI
 from pydantic import BaseModel
 
-from portals.common import create_portal_app, default_core_client
+from portals.common import create_portal_app, default_core_client, document_response
 from shared.core_client import CoreClient
 
 STATIC = Path(__file__).resolve().parent / "static"
@@ -25,6 +25,23 @@ def create_ngo_app(core: CoreClient, jwt_secret: str, **kwargs) -> FastAPI:
     def set_availability(body: AvailabilityIn, account: dict = Depends(agent)):
         """Module 3/5: the NGO agent marks themselves available (green) or unavailable (red)."""
         return core.set_availability(account["id"], body.available)
+
+    # ---- Phase 3 (Module 7): nearby food feed and accept
+    @app.get("/api/feed")
+    def feed(account: dict = Depends(agent)):
+        return core.agent_feed(account["id"])
+
+    @app.post("/api/listings/{listing_id}/accept")
+    def accept(listing_id: str, account: dict = Depends(agent)):
+        return core.accept_listing(listing_id, account["id"])
+
+    @app.get("/api/pickups")
+    def pickups(account: dict = Depends(agent)):
+        return core.agent_pickups(account["id"])
+
+    @app.get("/api/listings/{listing_id}/photo")
+    def photo(listing_id: str, account: dict = Depends(agent)):
+        return document_response(*core.listing_photo(listing_id, viewer_id=account["id"]))
 
     return app
 
