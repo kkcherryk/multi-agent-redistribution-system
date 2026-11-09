@@ -33,7 +33,7 @@ def create_account(session: Session, *, role: str, email: str, password: str, di
     if get_by_email(session, email) is not None:
         raise EmailTaken(email)
     if status is None:
-        status = AccountStatus.VERIFIED if role == "host" else AccountStatus.UNDER_REVIEW
+        status = AccountStatus.VERIFIED if role == "host" else AccountStatus.APPLICANT
     account = Account(role=role, email=email, password_hash=hash_password(password),
                       display_name=display_name, phone=phone, status=status)
     session.add(account)

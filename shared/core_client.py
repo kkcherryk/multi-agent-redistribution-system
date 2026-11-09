@@ -21,7 +21,7 @@ class CoreClient:
         self._http = http or httpx.Client(base_url=base_url, timeout=timeout)
         self._headers = {"X-Service-Key": service_key}
 
-    def _request(self, method: str, path: str, **kwargs):
+    def _send(self, method: str, path: str, **kwargs) -> httpx.Response:
         try:
             resp = self._http.request(method, path, headers=self._headers, **kwargs)
         except httpx.HTTPError as exc:
@@ -32,7 +32,11 @@ class CoreClient:
             except ValueError:
                 detail = resp.text
             raise CoreError(resp.status_code, detail)
-        return resp.json()
+        return resp
+
+    def _request(self, method: str, path: str, **kwargs):
+        resp = self._send(method, path, **kwargs)
+        return None if resp.status_code == 204 else resp.json()
 
     def health(self) -> dict:
         return self._request("GET", "/health")
@@ -52,3 +56,38 @@ class CoreClient:
 
     def list_events(self, limit: int = 50) -> list[dict]:
         return self._request("GET", "/internal/events", params={"limit": limit})
+
+    # ---- Phase 2: onboarding, review, availability
+    def get_onboarding(self, account_id: str) -> dict:
+        return self._request("GET", f"/internal/accounts/{account_id}/onboarding")
+
+    def put_profile(self, account_id: str, profile: dict) -> dict:
+        return self._request("PUT", f"/internal/accounts/{account_id}/profile", json=profile)
+
+    def upload_document(self, account_id: str, kind: str, filename: str, data: bytes, content_type: str) -> dict:
+        return self._request("POST", f"/internal/accounts/{account_id}/documents", data={"kind": kind},
+                             files={"file": (filename, data, content_type or "application/octet-stream")})
+
+    def delete_document(self, account_id: str, doc_id: str) -> None:
+        self._request("DELETE", f"/internal/accounts/{account_id}/documents/{doc_id}")
+
+    def document_content(self, doc_id: str, account_id: str | None = None) -> tuple[bytes, str]:
+        params = {"account_id": account_id} if account_id else None
+        resp = self._send("GET", f"/internal/documents/{doc_id}/content", params=params)
+        return resp.content, resp.headers.get("content-type", "application/octet-stream")
+
+    def submit_application(self, account_id: str) -> dict:
+        return self._request("POST", f"/internal/accounts/{account_id}/submit")
+
+    def set_availability(self, account_id: str, available: bool) -> dict:
+        return self._request("PUT", f"/internal/accounts/{account_id}/availability", json={"available": available})
+
+    def review_queue(self, status: str = "under_review") -> list[dict]:
+        return self._request("GET", "/internal/review-queue", params={"status": status})
+
+    def review(self, account_id: str, decision: str, note: str | None, reviewer_id: str) -> dict:
+        return self._request("POST", f"/internal/accounts/{account_id}/review",
+                             json={"decision": decision, "note": note, "reviewer_id": reviewer_id})
+
+    def ngo_directory(self) -> list[dict]:
+        return self._request("GET", "/internal/ngo-directory")

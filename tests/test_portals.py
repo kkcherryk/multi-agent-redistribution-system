@@ -9,7 +9,7 @@ from tests.conftest import HOST_EMAIL, HOST_PASSWORD, JWT, applicant
 def test_register_login_me_logout_restaurant(portals):
     rest = portals["restaurant"]
     r = rest.post("/api/register", json=applicant())
-    assert r.status_code == 201 and r.json()["status"] == "under_review"
+    assert r.status_code == 201 and r.json()["status"] == "applicant"
     assert "frs_restaurant_session" in r.cookies
     assert rest.get("/api/me").json()["email"] == "cook@example.org"  # auto-signed-in after registering
     assert rest.post("/api/logout").status_code == 204
@@ -65,7 +65,7 @@ def test_admin_sees_cross_portal_records(portals):
     admin.post("/api/login", json={"email": HOST_EMAIL, "password": HOST_PASSWORD})
     roles = sorted(a["role"] for a in admin.get("/api/accounts").json())
     assert roles == ["host", "ngo", "restaurant"]
-    assert admin.get("/api/accounts", params={"status": "under_review"}).json().__len__() == 2
+    assert admin.get("/api/accounts", params={"status": "applicant"}).json().__len__() == 2
     assert any(e["type"] == "account.registered" for e in admin.get("/api/events").json())
 
 

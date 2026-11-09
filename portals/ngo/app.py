@@ -3,7 +3,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
+from pydantic import BaseModel
 
 from portals.common import create_portal_app, default_core_client
 from shared.core_client import CoreClient
@@ -11,9 +12,21 @@ from shared.core_client import CoreClient
 STATIC = Path(__file__).resolve().parent / "static"
 
 
+class AvailabilityIn(BaseModel):
+    available: bool
+
+
 def create_ngo_app(core: CoreClient, jwt_secret: str, **kwargs) -> FastAPI:
-    return create_portal_app(portal="ngo", core=core, jwt_secret=jwt_secret, static_dir=STATIC,
-                             allow_registration=True, title="FRS NGO portal", **kwargs)
+    app = create_portal_app(portal="ngo", core=core, jwt_secret=jwt_secret, static_dir=STATIC,
+                            allow_registration=True, title="FRS NGO portal", **kwargs)
+    agent = app.state.current_account
+
+    @app.put("/api/availability")
+    def set_availability(body: AvailabilityIn, account: dict = Depends(agent)):
+        """Module 3/5: the NGO agent marks themselves available (green) or unavailable (red)."""
+        return core.set_availability(account["id"], body.available)
+
+    return app
 
 
 def build_default_app() -> FastAPI:
