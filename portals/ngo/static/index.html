@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NGO Portal</title>
+<link rel="stylesheet" href="/static/common/portal.css">
+<style>:root{--accent:#1a7f37}</style>
+</head><body>
+<header><h1>NGO Portal</h1><div><button id="logout" class="hidden" type="button">Sign out</button>
+<a id="home" href="#">All portals</a></div></header>
+<main>
+  <section id="auth" class="panel hidden">
+    <div class="tabs"><button type="button" data-mode="login" class="active">Sign in</button><button type="button" data-mode="register">Register</button></div>
+    <form id="login-form" autocomplete="on">
+      <label for="l-email">Email</label><input id="l-email" name="email" type="email" required autocomplete="username">
+      <label for="l-pass">Password</label><input id="l-pass" name="password" type="password" required autocomplete="current-password">
+      <button class="primary" type="submit">Sign in</button>
+      <div id="login-msg" class="msg"></div>
+    </form>
+    <form id="register-form" class="hidden" autocomplete="on">
+      <label for="r-name">NGO name</label><input id="r-name" name="display_name" required minlength="2" maxlength="120">
+      <label for="r-email">Email</label><input id="r-email" name="email" type="email" required autocomplete="email">
+      <label for="r-phone">Phone</label><input id="r-phone" name="phone" type="tel" autocomplete="tel" placeholder="+91 98765 43210">
+      <label for="r-pass">Password (8–72 characters)</label><input id="r-pass" name="password" type="password" minlength="8" maxlength="72" required autocomplete="new-password">
+      <label for="r-confirm">Confirm password</label><input id="r-confirm" name="confirm" type="password" minlength="8" maxlength="72" required autocomplete="new-password">
+      <button class="primary" type="submit">Submit application</button>
+      <div id="register-msg" class="msg"></div>
+    </form>
+  </section>
+  <section id="dashboard" class="hidden">
+    <div class="panel"><h2 id="welcome"></h2><dl id="profile"></dl>
+      <p id="pending-note" class="note hidden">Your NGO application is awaiting host review. NGO ID, representative photo verification and availability are added in Phase 2.</p></div>
+    
+  </section>
+</main>
+<script>
+window.PORTAL = { title: 'NGO Portal' };
+
+</script>
+<script src="/static/common/portal.js"></script>
+</body></html>
