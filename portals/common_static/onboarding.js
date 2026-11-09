@@ -178,5 +178,7 @@
     role = acc.role;
     root = document.getElementById("onboarding");
     render().catch((e) => { root.replaceChildren(ui.el("p", { class: "msg err" }, e.message)); });
+    // Portal-specific features (food listings, NGO feed) register here.
+    for (const extra of window.PORTAL.extras || []) extra(acc, helpers);
   };
 })();

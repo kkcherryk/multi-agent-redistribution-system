@@ -91,3 +91,31 @@ class CoreClient:
 
     def ngo_directory(self) -> list[dict]:
         return self._request("GET", "/internal/ngo-directory")
+
+    # ---- Phase 3: food listings and matching
+    def create_listing(self, restaurant_id: str, data_json: str, filename: str, photo: bytes, content_type: str) -> dict:
+        return self._request("POST", "/internal/listings", data={"restaurant_id": restaurant_id, "data": data_json},
+                             files={"photo": (filename, photo, content_type or "application/octet-stream")})
+
+    def restaurant_listings(self, restaurant_id: str) -> list[dict]:
+        return self._request("GET", f"/internal/restaurants/{restaurant_id}/listings")
+
+    def cancel_listing(self, listing_id: str, restaurant_id: str) -> dict:
+        return self._request("POST", f"/internal/listings/{listing_id}/cancel", params={"restaurant_id": restaurant_id})
+
+    def agent_feed(self, agent_id: str) -> dict:
+        return self._request("GET", f"/internal/agents/{agent_id}/feed")
+
+    def accept_listing(self, listing_id: str, agent_id: str) -> dict:
+        return self._request("POST", f"/internal/listings/{listing_id}/accept", params={"agent_id": agent_id})
+
+    def agent_pickups(self, agent_id: str) -> list[dict]:
+        return self._request("GET", f"/internal/agents/{agent_id}/pickups")
+
+    def listing_photo(self, listing_id: str, viewer_id: str | None = None) -> tuple[bytes, str]:
+        params = {"viewer_id": viewer_id} if viewer_id else None
+        resp = self._send("GET", f"/internal/listings/{listing_id}/photo", params=params)
+        return resp.content, resp.headers.get("content-type", "application/octet-stream")
+
+    def all_listings(self, status: str | None = None) -> list[dict]:
+        return self._request("GET", "/internal/listings", params={"status": status} if status else None)

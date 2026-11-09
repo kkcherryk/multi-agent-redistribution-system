@@ -53,3 +53,13 @@ input[type=file]{padding:6px}
 .thumbs{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
 .thumbs a{font-size:.85rem}.thumbs img{width:120px;height:90px;object-fit:cover;border-radius:6px;border:1px solid var(--line)}
 .section-tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+
+.listing{display:grid;grid-template-columns:96px 1fr;gap:12px;border:1px solid var(--line);border-radius:8px;padding:12px;margin-bottom:10px}
+.listing img{width:96px;height:96px;object-fit:cover;border-radius:6px;border:1px solid var(--line)}
+.listing h3{margin:0 0 4px;font-size:1rem}.listing .meta{color:var(--muted);font-size:.85rem;line-height:1.5}
+.pill{display:inline-block;padding:1px 8px;border-radius:999px;font-size:.78rem;border:1px solid var(--line);margin-right:4px}
+.pill.new{background:#c4620a;color:#fff;border-color:#c4620a}.pill.veg{color:#1a7f37;border-color:#1a7f37}
+.pill.non_veg{color:#cf222e;border-color:#cf222e}
+.status.active{color:#1f6feb;border-color:#1f6feb}.status.assigned{color:var(--ok);border-color:var(--ok)}
+.status.cancelled,.status.expired{color:var(--muted)}
+@media (max-width:600px){.listing{grid-template-columns:64px 1fr}.listing img{width:64px;height:64px}}

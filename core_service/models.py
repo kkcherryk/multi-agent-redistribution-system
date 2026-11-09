@@ -4,7 +4,7 @@ from __future__ import annotations
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import JSON, Boolean, DateTime, Float, ForeignKey, Integer, String, Text
+from sqlalchemy import JSON, Boolean, DateTime, Float, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.types import TypeDecorator
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
@@ -157,3 +157,78 @@ class Review(Base):
     to_status: Mapped[str] = mapped_column(String(20))
     note: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
+
+
+class ListingStatus:
+    """Food ticket lifecycle (spec section 5). Phase 3 covers active -> assigned, cancelled and expired;
+    collection, delivery and storage states are added in Phase 4."""
+
+    ACTIVE = "active"
+    ASSIGNED = "assigned"
+    CANCELLED = "cancelled"
+    EXPIRED = "expired"
+    ALL = (ACTIVE, ASSIGNED, CANCELLED, EXPIRED)
+
+
+class FoodListing(Base):
+    """Module 6: a surplus-food offer posted by a verified restaurant."""
+
+    __tablename__ = "food_listings"
+
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=new_id)
+    restaurant_id: Mapped[str] = mapped_column(ForeignKey("accounts.id", ondelete="CASCADE"), index=True)
+    food_type: Mapped[str] = mapped_column(String(120))
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    dietary: Mapped[str] = mapped_column(String(20))  # veg / non_veg / mixed
+    quantity: Mapped[float] = mapped_column(Float)
+    unit: Mapped[str] = mapped_column(String(20))  # portions / kg
+    condition: Mapped[str] = mapped_column(String(20))  # fresh / good / fair
+    prepared_at: Mapped[datetime] = mapped_column(UTCDateTime())
+    expires_at: Mapped[datetime] = mapped_column(UTCDateTime(), index=True)
+    pickup_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # Pickup point copied from the restaurant profile when the listing is posted.
+    latitude: Mapped[float] = mapped_column(Float)
+    longitude: Mapped[float] = mapped_column(Float)
+    status: Mapped[str] = mapped_column(String(20), default=ListingStatus.ACTIVE, index=True)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow, onupdate=utcnow)
+
+
+class ListingPhoto(Base):
+    __tablename__ = "listing_photos"
+
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=new_id)
+    listing_id: Mapped[str] = mapped_column(ForeignKey("food_listings.id", ondelete="CASCADE"), index=True)
+    filename: Mapped[str] = mapped_column(String(200))
+    content_type: Mapped[str] = mapped_column(String(60))
+    size_bytes: Mapped[int] = mapped_column(Integer)
+    storage_key: Mapped[str] = mapped_column(String(80))
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
+
+
+class ListingNotification(Base):
+    """Module 7: an alert sent to a nearby eligible NGO agent about a listing."""
+
+    __tablename__ = "listing_notifications"
+    __table_args__ = (UniqueConstraint("listing_id", "agent_id", name="uq_notification_listing_agent"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    listing_id: Mapped[str] = mapped_column(ForeignKey("food_listings.id", ondelete="CASCADE"), index=True)
+    agent_id: Mapped[str] = mapped_column(ForeignKey("accounts.id", ondelete="CASCADE"), index=True)
+    distance_km: Mapped[float] = mapped_column(Float)
+    seen_at: Mapped[datetime | None] = mapped_column(UTCDateTime(), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
+
+
+class Assignment(Base):
+    """Collector assignment. ``listing_id`` is unique, so the database itself prevents double assignment.
+    Phase 3 creates it as ``accepted``; Phase 4 adds en-route / inspection / collected states."""
+
+    __tablename__ = "assignments"
+
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=new_id)
+    listing_id: Mapped[str] = mapped_column(ForeignKey("food_listings.id", ondelete="CASCADE"), unique=True)
+    agent_id: Mapped[str] = mapped_column(ForeignKey("accounts.id", ondelete="CASCADE"), index=True)
+    status: Mapped[str] = mapped_column(String(20), default="accepted", index=True)
+    distance_km: Mapped[float] = mapped_column(Float)
+    accepted_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)

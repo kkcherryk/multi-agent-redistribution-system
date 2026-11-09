@@ -2,7 +2,7 @@
 (function () {
   const cfg = window.PORTAL;
   const $ = (id) => document.getElementById(id);
-  const STATUS_LABEL = { applicant: "Not submitted", under_review: "Under review", on_hold: "On hold", verified: "Verified", declined: "Declined" };
+  const STATUS_LABEL = { active: "Waiting for NGO", assigned: "NGO assigned", cancelled: "Cancelled", expired: "Expired", applicant: "Not submitted", under_review: "Under review", on_hold: "On hold", verified: "Verified", declined: "Declined" };
 
   async function api(path, opts = {}) {
     const isForm = opts.body instanceof FormData;  // let the browser set the multipart boundary
