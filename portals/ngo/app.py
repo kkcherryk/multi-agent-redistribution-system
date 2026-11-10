@@ -3,13 +3,16 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, HTTPException
 from pydantic import BaseModel
 
 from portals.common import create_portal_app, default_core_client, document_response
 from shared.core_client import CoreClient
 
 STATIC = Path(__file__).resolve().parent / "static"
+
+
+PICKUP_ACTIONS = ("start", "release", "inspection", "deliver", "store", "dispose")
 
 
 class AvailabilityIn(BaseModel):
@@ -42,6 +45,31 @@ def create_ngo_app(core: CoreClient, jwt_secret: str, **kwargs) -> FastAPI:
     @app.get("/api/listings/{listing_id}/photo")
     def photo(listing_id: str, account: dict = Depends(agent)):
         return document_response(*core.listing_photo(listing_id, viewer_id=account["id"]))
+
+    # ---- Phase 4 (Modules 8, 9): pickup steps, food check, delivery, storage
+    @app.post("/api/pickups/{listing_id}/{action}")
+    def pickup_action(listing_id: str, action: str, body: dict | None = None, account: dict = Depends(agent)):
+        if action not in PICKUP_ACTIONS:
+            raise HTTPException(status_code=404, detail="unknown action")
+        return core.pickup_action(listing_id, action, account["id"], body)
+
+    @app.get("/api/recipients")
+    def recipients(account: dict = Depends(agent)):
+        return core.recipients(account["id"])
+
+    @app.post("/api/recipients", status_code=201)
+    def add_recipient(body: dict, account: dict = Depends(agent)):
+        return core.add_recipient(account["id"], body)
+
+    @app.get("/api/storage")
+    def storage(account: dict = Depends(agent)):
+        return core.storage(account["id"])
+
+    @app.post("/api/storage/{item_id}/{action}")
+    def storage_action(item_id: str, action: str, body: dict, account: dict = Depends(agent)):
+        if action not in ("distribute", "dispose"):
+            raise HTTPException(status_code=404, detail="unknown action")
+        return core.storage_action(item_id, action, account["id"], body)
 
     return app
 

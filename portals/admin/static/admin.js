@@ -135,6 +135,35 @@
     }
   }
 
+  function outcome(l) {
+    const parts = [];
+    if (l.inspection) parts.push(l.inspection.outcome === "rejected" ? `rejected: ${l.inspection.notes}`
+      : `collected ${l.inspection.actual_quantity}/${l.inspection.listed_quantity}`);
+    for (const h of l.handovers || []) {
+      parts.push(h.kind === "delivered" || h.kind === "distributed" ? `${h.kind} ${h.quantity} → ${h.recipient ? h.recipient.name : "?"}`
+        : h.kind === "disposed" ? `disposed (${h.notes})` : `${h.kind} ${h.quantity}`);
+    }
+    return parts.join("; ") || "—";
+  }
+
+  async function loadStorage() {
+    const rows = await ui.api("/storage");
+    const tb = $("storage");
+    tb.replaceChildren();
+    for (const s of rows) {
+      const tr = ui.el("tr");
+      const st = s.expired ? "expired — dispose" : s.status.replace("_", " ");
+      tr.append(td(s.ngo_name), td(s.food_type), td(`${s.remaining_quantity} / ${s.stored_quantity} ${s.unit}`),
+                td(s.location), td(new Date(s.expires_at).toLocaleString([], { dateStyle: "short", timeStyle: "short" })), td(st));
+      tb.append(tr);
+    }
+    if (!rows.length) {
+      const tr = ui.el("tr");
+      tr.append(td("Nothing stored."));
+      tb.append(tr);
+    }
+  }
+
   async function loadListings() {
     const rows = await ui.api("/listings");
     const tb = $("listings");
@@ -146,7 +175,7 @@
       const a = l.assignment;
       tr.append(td(fmt(l.created_at)), td(l.restaurant.name), td(food), td(`${l.quantity} ${l.unit}`),
                 td(fmt(l.expires_at)), td(ui.statusChip(l.status)), td(String(l.notified_agents)),
-                td(a ? `${a.representative_name} (${a.ngo_name})` : "—"));
+                td(a ? `${a.representative_name} (${a.ngo_name})` : "—"), td(outcome(l)));
       tb.append(tr);
     }
     if (!rows.length) {
@@ -157,12 +186,12 @@
   }
 
   async function loadAll() {
-    await Promise.all([loadQueue(), loadAgents(), loadAccounts(), loadListings()]);
+    await Promise.all([loadQueue(), loadAgents(), loadAccounts(), loadListings(), loadStorage()]);
   }
 
   function showTab(name) {
     for (const b of document.querySelectorAll("#admin-tabs button")) b.classList.toggle("active", b.dataset.tab === name);
-    for (const t of ["queue", "listings", "agents", "accounts", "events"]) $("tab-" + t).classList.toggle("hidden", t !== name);
+    for (const t of ["queue", "listings", "storage", "agents", "accounts", "events"]) $("tab-" + t).classList.toggle("hidden", t !== name);
   }
 
   window.PORTAL.onSignedIn = (acc, helpers) => {

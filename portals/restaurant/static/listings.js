@@ -93,6 +93,18 @@
           body.append(ui.el("div", { class: "callout ok" },
             `Collector: ${a.representative_name} (${a.ngo_name})${a.phone ? " · " + a.phone : ""} — accepted ${fmt(a.accepted_at)}`));
         }
+        if (it.inspection) {
+          const i = it.inspection;
+          body.append(ui.el("div", { class: "meta" }, i.outcome === "rejected"
+            ? `Rejected at pickup: ${i.notes}`
+            : `Collected ${i.actual_quantity} of ${i.listed_quantity} ${it.unit} (${i.observed_condition})${i.notes ? " — " + i.notes : ""}`));
+        }
+        for (const h of it.handovers || []) {
+          const where = { delivered: `Delivered to ${h.recipient ? h.recipient.name : "recipient"}`,
+                          stored: "Stored at the NGO for later", distributed: `Given from NGO storage to ${h.recipient ? h.recipient.name : "recipient"}`,
+                          disposed: "Disposed by the NGO" }[h.kind];
+          body.append(ui.el("div", { class: "meta" }, `${where} — ${h.quantity} ${it.unit}, ${fmt(h.created_at)}`));
+        }
         if (it.status === "active") {
           const c = ui.el("button", { type: "button", class: "small danger" }, "Cancel listing");
           c.addEventListener("click", async () => {

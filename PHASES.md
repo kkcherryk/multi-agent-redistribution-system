@@ -12,8 +12,8 @@ Each phase must be reviewed and explicitly approved before the next one starts.
 |---|---|---|---|
 | 1 ✅ | Foundation: portals, core data service, role selection & authentication | M1, M4, M13 | Core data service (authoritative records), 3 separate portal apps (Admin/Host, Restaurant, NGO) with own frontend + backend, role-selection landing page, per-portal login, service-to-service keys, host accounts created by the team, audit event log |
 | 2 ✅ | Onboarding, verification & availability | M2, M3, M5 | Restaurant onboarding (lat/long, photos, licence/evidence), NGO + representative onboarding with photo verification, host review queue (approve / hold / decline / request info), badges (restaurant blue/orange, NGO green, agent green/red), agent directory |
-| **3** | Food listings & nearby-NGO notification | M6, M7 (basic) | Listing with quantity, condition, prep/expiry time, photo; expiry enforcement; only verified restaurants; distance-based nearby-agent alerts; first-accept claim with no double assignment |
-| 4 | Pickup, inspection, delivery & storage | M8, M9 | Assignment state machine, inspection record (actual qty, condition, discrepancy), delivery confirmation to recipient, NGO storage inventory with expiry tracking |
+| 3 ✅ | Food listings & nearby-NGO notification | M6, M7 (basic) | Listing with quantity, condition, prep/expiry time, photo; expiry enforcement; only verified restaurants; distance-based nearby-agent alerts; first-accept claim with no double assignment |
+| **4** | Pickup, inspection, delivery & storage | M8, M9 | Assignment state machine, inspection record (actual qty, condition, discrepancy), delivery confirmation to recipient, NGO storage inventory with expiry tracking |
 | 5 | Host dashboard & live map | M10 | Map of restaurants, agents, open tickets and movement; agent detail panel; last-known vs live location; operational overview |
 | 6 | Multi-agent layer: logistics & backup collection | M11 | Agent runtime + message bus, route-optimisation agent (nearest-collector + route heuristics), backup/storage agent with trigger rules (no acceptance / all agents busy) |
 | 7 | Trust assessment & negotiation protocol *(proposed design)* | M12, M7 (advanced) | Explainable trust/reputation scores with confidence and reasons (decision support only), Contract-Net-style negotiation between listing and NGO agents, host review flags |
@@ -39,3 +39,8 @@ Phases can be re-ordered, split or extended as requirements change.
 | 3 | Only verified + available NGO agents within the radius are alerted. Agents who become available later are alerted about food already waiting. |
 | 3 | First agent to accept gets the pickup (no double assignment, enforced in the database). One active pickup per agent. If nobody accepts, the listing stays open until it expires. |
 | 3 | Restaurant phone and contact name are shared with the NGO only after it accepts; restaurant badges are never shown to NGOs. |
+| 4 | Pickup steps: accepted → on the way → food check → collected or rejected; then delivered, stored or disposed. Food counts as collected only after the food check is recorded. |
+| 4 | Food check: collected quantity cannot exceed the listed quantity; a smaller quantity needs a note; spoiled food must be rejected with a reason. Expired food cannot be collected, delivered, stored or given out; it must be recorded as disposed with a reason. |
+| 4 | The agent can give a pickup back before collecting it; the food is offered to nearby agents again. |
+| 4 | Each NGO keeps its own recipient list (orphanage, shelter, old-age home, community kitchen, slum community, other). Proof of delivery is the name of the person who received the food. |
+| 4 | Collected food is handed over in full (delivered to one recipient or stored). Stored food can be given out in parts; stock is tracked against its best-before time. |

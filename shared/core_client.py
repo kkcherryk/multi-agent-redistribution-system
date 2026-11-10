@@ -119,3 +119,23 @@ class CoreClient:
 
     def all_listings(self, status: str | None = None) -> list[dict]:
         return self._request("GET", "/internal/listings", params={"status": status} if status else None)
+
+    # ---- Phase 4: pickup, inspection, delivery, storage
+    def pickup_action(self, listing_id: str, action: str, agent_id: str, body: dict | None = None) -> dict:
+        return self._request("POST", f"/internal/pickups/{listing_id}/{action}", params={"agent_id": agent_id},
+                             json=body or {})
+
+    def recipients(self, agent_id: str) -> list[dict]:
+        return self._request("GET", f"/internal/agents/{agent_id}/recipients")
+
+    def add_recipient(self, agent_id: str, body: dict) -> dict:
+        return self._request("POST", f"/internal/agents/{agent_id}/recipients", json=body)
+
+    def storage(self, agent_id: str) -> list[dict]:
+        return self._request("GET", f"/internal/agents/{agent_id}/storage")
+
+    def storage_action(self, item_id: str, action: str, agent_id: str, body: dict) -> dict:
+        return self._request("POST", f"/internal/storage/{item_id}/{action}", params={"agent_id": agent_id}, json=body)
+
+    def all_storage(self) -> list[dict]:
+        return self._request("GET", "/internal/storage")
