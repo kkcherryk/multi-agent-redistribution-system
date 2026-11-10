@@ -104,3 +104,10 @@ def test_landing_offers_three_portals():
     page = TestClient(create_landing_app(urls)).get("/").text
     for portal, url in urls.items():
         assert f'href="{url}"' in page and f'data-portal="{portal}"' in page
+
+
+def test_pages_and_scripts_are_revalidated(portals):
+    # Browsers must re-check portal scripts so users get updates without a hard refresh.
+    for client in portals.values():
+        assert client.get("/").headers["cache-control"] == "no-cache"
+        assert client.get("/static/common/portal.js").headers["cache-control"] == "no-cache"

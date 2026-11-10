@@ -61,6 +61,8 @@
         const b = ui.el("div");
         const h = ui.el("h3");
         if (it.new) h.append(ui.el("span", { class: "pill new" }, "NEW"));
+        if (it.recommended) h.append(ui.el("span", { class: "pill recommended", title: it.recommended.reason },
+          `★ Recommended for you · ~${Math.round(it.recommended.eta_minutes)} min`));
         h.append(`${it.food_type} — ${it.quantity} ${it.unit}`);
         b.append(h);
         b.append(ui.el("span", { class: "pill " + it.dietary }, LABEL[it.dietary]), ui.el("span", { class: "pill" }, it.condition),

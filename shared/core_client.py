@@ -152,3 +152,28 @@ class CoreClient:
 
     def host_map(self) -> dict:
         return self._request("GET", "/internal/map")
+
+    # ---- Phase 6: agents, backup collections, routes
+    def get_backup(self, agent_id: str) -> dict:
+        return self._request("GET", f"/internal/agents/{agent_id}/backup")
+
+    def put_backup(self, agent_id: str, body: dict) -> dict:
+        return self._request("PUT", f"/internal/agents/{agent_id}/backup", json=body)
+
+    def backup_requests(self, agent_id: str) -> list[dict]:
+        return self._request("GET", f"/internal/agents/{agent_id}/backup-requests")
+
+    def backup_request_action(self, request_id: str, action: str, agent_id: str) -> dict:
+        return self._request("POST", f"/internal/backup-requests/{request_id}/{action}", params={"agent_id": agent_id})
+
+    def pickup_route(self, listing_id: str, agent_id: str) -> dict:
+        return self._request("GET", f"/internal/pickups/{listing_id}/route", params={"agent_id": agent_id})
+
+    def agent_system(self) -> dict:
+        return self._request("GET", "/internal/agent-system")
+
+    def run_agents(self) -> dict:
+        return self._request("POST", "/internal/agent-system/run")
+
+    def escalate_listing(self, listing_id: str) -> dict:
+        return self._request("POST", f"/internal/listings/{listing_id}/escalate")

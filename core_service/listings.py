@@ -151,23 +151,31 @@ def feed_for_agent(db: Session, agent: Account, radius_km: float) -> list[dict]:
     expire_due(db)
     notes = {n.listing_id: n for n in db.scalars(select(ListingNotification)
                                                  .where(ListingNotification.agent_id == agent.id))}
+    from .models import AgentRecommendation  # Phase 6: logistics agent suggestions
+    recs = {r.listing_id: r for r in db.scalars(select(AgentRecommendation)
+                                                .where(AgentRecommendation.agent_id == agent.id))}
     out = []
     for listing in db.scalars(select(FoodListing).where(FoodListing.status == ListingStatus.ACTIVE)):
         d = haversine_km(profile.latitude, profile.longitude, listing.latitude, listing.longitude)
         if d > radius_km:
             continue
         note = notes.get(listing.id)
+        rec = recs.get(listing.id)
         out.append({**listing_view(db, listing, audience="ngo"), "distance_km": round(d, 2),
-                    "alerted": note is not None, "new": note is not None and note.seen_at is None})
+                    "alerted": note is not None, "new": note is not None and note.seen_at is None,
+                    "recommended": None if rec is None else {"rank": rec.rank, "eta_minutes": rec.eta_minutes,
+                                                             "reason": rec.reason}})
         if note is not None and note.seen_at is None:
             note.seen_at = utcnow()
     out.sort(key=lambda r: r["distance_km"])
     return out
 
 
-def accept_listing(db: Session, agent: Account, listing_id: str, radius_km: float, *, portal: str) -> Assignment:
+def accept_listing(db: Session, agent: Account, listing_id: str, radius_km: float, *, portal: str,
+                   require_available: bool = True) -> Assignment:
+    """First accept wins. Backup collections (Phase 6) pass require_available=False and their own distance limit."""
     profile = require_verified_agent(db, agent)
-    if not profile.available:
+    if require_available and not profile.available:
         raise RuleError("set yourself as Available before accepting a pickup")
     expire_due(db)
     listing = db.get(FoodListing, listing_id)

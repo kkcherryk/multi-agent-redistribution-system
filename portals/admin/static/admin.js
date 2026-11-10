@@ -176,6 +176,17 @@
       tr.append(td(fmt(l.created_at)), td(l.restaurant.name), td(food), td(`${l.quantity} ${l.unit}`),
                 td(fmt(l.expires_at)), td(ui.statusChip(l.status)), td(String(l.notified_agents)),
                 td(a ? `${a.representative_name} (${a.ngo_name})` : "—"), td(outcome(l)));
+      const actionCell = ui.el("td");
+      if (l.status === "active") {
+        const esc = ui.el("button", { type: "button", class: "small", title: "Ask a backup collector now" }, "Escalate");
+        esc.addEventListener("click", async () => {
+          esc.disabled = true;
+          try { const r = await ui.api(`/listings/${l.id}/escalate`, { method: "POST" }); esc.textContent = r.stage.replace("_", " "); }
+          catch (e) { alert(e.message); esc.disabled = false; }
+        });
+        actionCell.append(esc);
+      }
+      tr.append(actionCell);
       tb.append(tr);
     }
     if (!rows.length) {
@@ -191,7 +202,8 @@
 
   function showTab(name) {
     for (const b of document.querySelectorAll("#admin-tabs button")) b.classList.toggle("active", b.dataset.tab === name);
-    for (const t of ["map", "queue", "listings", "storage", "agents", "accounts", "events"]) $("tab-" + t).classList.toggle("hidden", t !== name);
+    for (const t of ["map", "queue", "listings", "agents-ai", "storage", "agents", "accounts", "events"]) $("tab-" + t).classList.toggle("hidden", t !== name);
+    if (name === "agents-ai" && window.FRSAgents) window.FRSAgents.show(ui);
     if (window.FRSMap) { if (name === "map") window.FRSMap.show(ui); else window.FRSMap.hide(); }
   }
 

@@ -6,6 +6,7 @@ the calling portal and the core enforces what that portal may read or write (dat
 from __future__ import annotations
 
 import secrets
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, Query, UploadFile
@@ -20,6 +21,10 @@ from . import accounts, listings, onboarding, tracking
 from .listings_api import build_router as build_listings_router
 from .fulfilment_api import build_router as build_fulfilment_router
 from .tracking import build_router as build_tracking_router
+from .agents_api import build_router as build_agents_router
+from .agents.backup import BackupAgent
+from .agents.logistics import LogisticsAgent
+from .agents.runtime import AgentRuntime
 from .db import make_engine
 from .models import Account, AccountStatus, Base, Document, Event, FoodListing, NgoProfile
 from .schemas import (PROFILE_SCHEMAS, AccountOut, AvailabilityIn, CredentialsIn, EventOut, RegisterIn,
@@ -36,13 +41,25 @@ def account_out(account: Account, ngo_profile: NgoProfile | None = None) -> dict
 
 
 def create_core_app(db_url: str, service_keys: dict[str, str], upload_dir: Path | None = None,
-                    match_radius_km: float = listings.DEFAULT_RADIUS_KM) -> FastAPI:
+                    match_radius_km: float = listings.DEFAULT_RADIUS_KM,
+                    agents_interval_seconds: float | None = None) -> FastAPI:
+    """``agents_interval_seconds``: run the backend agents in a background thread at this interval (None = only
+    when asked through /internal/agent-system/run, which is what the tests use)."""
     engine = make_engine(db_url)
     Base.metadata.create_all(engine)
     SessionLocal = sessionmaker(engine, expire_on_commit=False)
     upload_dir = Path(upload_dir or DATA_DIR / "uploads")
+    runtime = AgentRuntime([LogisticsAgent(match_radius_km), BackupAgent()])
 
-    app = FastAPI(title="FRS Core Data Service", version="0.5.0")
+    @asynccontextmanager
+    async def lifespan(_app):
+        if agents_interval_seconds:
+            runtime.start(SessionLocal, agents_interval_seconds)
+        yield
+        runtime.stop()
+
+    app = FastAPI(title="FRS Core Data Service", version="0.6.0", lifespan=lifespan)
+    app.state.runtime = runtime
     app.state.engine = engine
     app.state.SessionLocal = SessionLocal
     app.state.upload_dir = upload_dir
@@ -255,8 +272,12 @@ def create_core_app(db_url: str, service_keys: dict[str, str], upload_dir: Path 
         return rows
 
     # ------------------------------------------------------------------ Phase 3: food listings & matching
+    def on_listing_created(db: Session, listing) -> None:
+        runtime.get("logistics").recommend(db, listing)  # rank collectors straight away, not at the next round
+
     listings_router = build_listings_router(get_db=get_db, caller_portal=caller_portal, require_admin=require_admin,
-                                            upload_dir=upload_dir / "listings", radius_km=match_radius_km)
+                                            upload_dir=upload_dir / "listings", radius_km=match_radius_km,
+                                            on_listing_created=on_listing_created)
     app.include_router(listings_router)
 
     # ------------------------------------------------------------------ Phase 4: pickup, delivery & storage
@@ -265,6 +286,10 @@ def create_core_app(db_url: str, service_keys: dict[str, str], upload_dir: Path 
 
     # ------------------------------------------------------------------ Phase 5: live locations & host map
     app.include_router(build_tracking_router(get_db=get_db, caller_portal=caller_portal, require_admin=require_admin))
+
+    # ------------------------------------------------------------------ Phase 6: multi-agent layer
+    app.include_router(build_agents_router(get_db=get_db, caller_portal=caller_portal, require_admin=require_admin,
+                                           runtime=runtime, pickup_view=listings_router.pickup_view))
     return app
 
 
@@ -272,4 +297,4 @@ def build_default_app() -> FastAPI:
     from shared.config import get_settings
 
     s = get_settings()
-    return create_core_app(s.db_url, s.service_keys)
+    return create_core_app(s.db_url, s.service_keys, agents_interval_seconds=30)

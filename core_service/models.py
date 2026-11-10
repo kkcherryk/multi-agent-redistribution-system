@@ -346,3 +346,73 @@ class LocationPing(Base):
     latitude: Mapped[float] = mapped_column(Float)
     longitude: Mapped[float] = mapped_column(Float)
     created_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
+
+
+# ---------------------------------------------------------------- Phase 6: multi-agent layer (Module 11)
+
+class AgentMessage(Base):
+    """Message-bus record: what each backend agent observed, asked another agent, or decided (audit trail)."""
+
+    __tablename__ = "agent_messages"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    sender: Mapped[str] = mapped_column(String(40), index=True)
+    recipient: Mapped[str] = mapped_column(String(40), index=True)  # agent name, "host", "broadcast" or an account id
+    topic: Mapped[str] = mapped_column(String(60), index=True)
+    listing_id: Mapped[str | None] = mapped_column(String(32), nullable=True, index=True)
+    payload: Mapped[dict] = mapped_column(JSON, default=dict)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow, index=True)
+
+
+class AgentRecommendation(Base):
+    """Logistics agent's ranked collector suggestions for a listing (advisory; first accept still wins)."""
+
+    __tablename__ = "agent_recommendations"
+    __table_args__ = (UniqueConstraint("listing_id", "agent_id", name="uq_recommendation_listing_agent"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    listing_id: Mapped[str] = mapped_column(ForeignKey("food_listings.id", ondelete="CASCADE"), index=True)
+    agent_id: Mapped[str] = mapped_column(ForeignKey("accounts.id", ondelete="CASCADE"), index=True)
+    rank: Mapped[int] = mapped_column(Integer)
+    distance_km: Mapped[float] = mapped_column(Float)
+    eta_minutes: Mapped[float] = mapped_column(Float)
+    reason: Mapped[str] = mapped_column(String(300))
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
+
+
+class ListingEscalation(Base):
+    """Backup agent's escalation state for food at risk of not being collected."""
+
+    __tablename__ = "listing_escalations"
+
+    listing_id: Mapped[str] = mapped_column(ForeignKey("food_listings.id", ondelete="CASCADE"), primary_key=True)
+    stage: Mapped[str] = mapped_column(String(30))  # widened / backup_requested / needs_host / resolved
+    reason: Mapped[str] = mapped_column(String(300))
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow, onupdate=utcnow)
+
+
+class BackupVolunteer(Base):
+    """An NGO that opted in to backup collections: collect at-risk food and store it at its location."""
+
+    __tablename__ = "backup_volunteers"
+
+    agent_id: Mapped[str] = mapped_column(ForeignKey("accounts.id", ondelete="CASCADE"), primary_key=True)
+    active: Mapped[bool] = mapped_column(Boolean, default=True)
+    max_distance_km: Mapped[float] = mapped_column(Float, default=10.0)
+    updated_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow, onupdate=utcnow)
+
+
+class BackupRequest(Base):
+    """A backup collection offered to one volunteer: offered -> accepted | declined | timed_out | cancelled."""
+
+    __tablename__ = "backup_requests"
+
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=new_id)
+    listing_id: Mapped[str] = mapped_column(ForeignKey("food_listings.id", ondelete="CASCADE"), index=True)
+    volunteer_id: Mapped[str] = mapped_column(ForeignKey("accounts.id", ondelete="CASCADE"), index=True)
+    status: Mapped[str] = mapped_column(String(20), default="offered", index=True)
+    distance_km: Mapped[float] = mapped_column(Float)
+    eta_minutes: Mapped[float] = mapped_column(Float)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
+    responded_at: Mapped[datetime | None] = mapped_column(UTCDateTime(), nullable=True)
