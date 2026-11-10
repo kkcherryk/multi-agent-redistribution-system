@@ -44,6 +44,14 @@ The phased roadmap is in [PHASES.md](PHASES.md).
   the agent gets the restaurant's contact details.
 * The host's "Food listings" tab shows every listing, its status and how many agents were alerted.
 
+## Phase 4: pickup, food check, delivery and storage
+
+* The agent marks "I'm on my way", then records a food check at the restaurant (quantity received and condition),
+  and either collects or rejects the food.
+* Collected food is delivered to one of the NGO's recipients (orphanage, shelter, old-age home, ...) with the
+  receiver's name, or stored at the NGO and given out later in parts. Expired food is recorded as disposed.
+* The restaurant and the host see the full history of each listing; the host has an "NGO storage" tab.
+
 ## Run it
 
 ```bash

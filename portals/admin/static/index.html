@@ -21,6 +21,7 @@
     <div class="section-tabs" id="admin-tabs">
       <button type="button" data-tab="queue" class="active">Review queue <span id="queue-count"></span></button>
       <button type="button" data-tab="listings">Food listings</button>
+      <button type="button" data-tab="storage">NGO storage</button>
       <button type="button" data-tab="agents">NGO agent directory</button>
       <button type="button" data-tab="accounts">All accounts</button>
       <button type="button" data-tab="events">Activity</button>
@@ -31,7 +32,8 @@
         <option value="on_hold">On hold (waiting for applicant)</option><option value="verified">Verified</option>
         <option value="declined">Declined</option><option value="applicant">Not submitted</option></select></div>
       <div id="queue"></div></div>
-    <div id="tab-listings" class="panel hidden"><h2>Food listings</h2><div class="table-wrap"><table><thead><tr><th>Posted</th><th>Restaurant</th><th>Food</th><th>Qty</th><th>Best before</th><th>Status</th><th>Agents alerted</th><th>Collector</th></tr></thead><tbody id="listings"></tbody></table></div></div>
+    <div id="tab-listings" class="panel hidden"><h2>Food listings</h2><div class="table-wrap"><table><thead><tr><th>Posted</th><th>Restaurant</th><th>Food</th><th>Qty</th><th>Best before</th><th>Status</th><th>Agents alerted</th><th>Collector</th><th>Outcome</th></tr></thead><tbody id="listings"></tbody></table></div></div>
+    <div id="tab-storage" class="panel hidden"><h2>Food stored at NGOs</h2><div class="table-wrap"><table><thead><tr><th>NGO</th><th>Food</th><th>Left / stored</th><th>Location</th><th>Best before</th><th>Status</th></tr></thead><tbody id="storage"></tbody></table></div></div>
     <div id="tab-agents" class="panel hidden"><h2>NGO agents</h2><div class="table-wrap"><table><thead><tr><th>NGO</th><th>Representative</th><th>Phone</th><th>Verification</th><th>Availability</th><th>Location</th></tr></thead><tbody id="agents"></tbody></table></div></div>
     <div id="tab-accounts" class="panel hidden"><h2>Accounts</h2><div class="table-wrap"><table><thead><tr><th>Name</th><th>Role</th><th>Email</th><th>Application</th><th>Status marks</th><th>Created</th></tr></thead><tbody id="accounts"></tbody></table></div></div>
     <div id="tab-events" class="panel hidden"><h2>Recent activity</h2><div class="table-wrap"><table><thead><tr><th>Time</th><th>Event</th><th>Portal</th><th>Subject</th></tr></thead><tbody id="events"></tbody></table></div></div>

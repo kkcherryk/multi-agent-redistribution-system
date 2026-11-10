@@ -63,7 +63,7 @@ def eligible_agents(db: Session, listing: FoodListing, radius_km: float) -> list
 def active_assignment_count(db: Session, agent_id: str) -> int:
     return len(list(db.scalars(select(Assignment.id).join(FoodListing, FoodListing.id == Assignment.listing_id)
                                .where(Assignment.agent_id == agent_id,
-                                      FoodListing.status == ListingStatus.ASSIGNED))))
+                                      FoodListing.status.in_(ListingStatus.IN_PROGRESS)))))
 
 
 def require_verified_agent(db: Session, agent: Account) -> NgoProfile:
@@ -232,6 +232,8 @@ def listing_view(db: Session, listing: FoodListing, *, audience: str) -> dict:
                               "ngo_name": agent.display_name if agent else None,
                               "representative_name": ngo.representative_name if ngo else None,
                               "phone": agent.phone if agent else None}
+    from .fulfilment import fulfilment_view  # local import: fulfilment depends on this module
+    view.update(fulfilment_view(db, listing.id))
     if audience == "admin":
         view["notified_agents"] = len(list(db.scalars(select(ListingNotification.id)
                                                       .where(ListingNotification.listing_id == listing.id))))

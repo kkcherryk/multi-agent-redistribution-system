@@ -63,3 +63,6 @@ input[type=file]{padding:6px}
 .status.active{color:#1f6feb;border-color:#1f6feb}.status.assigned{color:var(--ok);border-color:var(--ok)}
 .status.cancelled,.status.expired{color:var(--muted)}
 @media (max-width:600px){.listing{grid-template-columns:64px 1fr}.listing img{width:64px;height:64px}}
+.status.collected{color:#8250df;border-color:#8250df}.status.delivered,.status.stored{color:var(--ok);border-color:var(--ok)}
+.status.rejected,.status.disposed{color:var(--err);border-color:var(--err)}
+details summary{cursor:pointer;margin:8px 0}

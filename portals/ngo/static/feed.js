@@ -33,30 +33,23 @@
     feedPanel.append(title, sub, feed);
     root.append(pickPanel, feedPanel);
 
-    async function load() {
-      const [data, mine] = await Promise.all([ui.api("/feed"), ui.api("/pickups")]);
+    let busy = false;
+    // full=true also redraws pickups, storage and recipients (after an action or on first load); the 15-second
+    // timer only refreshes the nearby-food list so it never wipes a form the agent is filling in.
+    async function load(full = true) {
+      const data = await ui.api("/feed");
+      if (full) {
+        const [mine, stock] = await Promise.all([ui.api("/pickups"), ui.api("/storage"),
+                                                 window.FRSPickups.refreshRecipients(ui)]);
+        busy = mine.some((m) => window.FRSPickups.busyStatuses.includes(m.status));  // one pickup at a time
+        window.FRSPickups.render(ui, picks, mine, () => load(true), mapLink);
+        if (window.FRSStorageRender) window.FRSStorageRender(stock);
+      }
       const available = acc.badges && acc.badges.availability && acc.badges.availability.label === "Available";
-      const busy = mine.some((m) => m.status === "assigned");  // one pickup at a time
       sub.textContent = `Food within ${data.radius_km} km of your NGO, nearest first. ` +
         (!available ? "You are Unavailable — switch to Available below to accept pickups."
           : busy ? "Finish your current pickup before accepting another one."
           : "Updates every 15 seconds.");
-
-      picks.replaceChildren();
-      if (!mine.length) picks.append(ui.el("p", { class: "note" }, "No pickups yet. Accept food below."));
-      for (const it of mine) {
-        const card = ui.el("div", { class: "listing" });
-        card.append(ui.el("img", { src: `/api/listings/${it.id}/photo`, alt: it.food_type }));
-        const b = ui.el("div");
-        b.append(ui.el("h3", {}, `${it.food_type} — ${it.quantity} ${it.unit}`), ui.statusChip(it.status));
-        const r = it.restaurant;
-        const meta = ui.el("div", { class: "meta" });
-        meta.append(`Collect from ${r.name}, ${r.address} (`, mapLink(ui, it.latitude, it.longitude, "map"),
-                    `)${r.contact_name ? " · contact " + r.contact_name : ""}${r.phone ? " · " + r.phone : ""}`);
-        b.append(meta, ui.el("div", { class: "meta" }, `Best before ${fmt(it.expires_at)}${it.pickup_notes ? " · " + it.pickup_notes : ""}`));
-        card.append(b);
-        picks.append(card);
-      }
 
       const fresh = data.listings.filter((x) => x.new).length;
       title.textContent = "Nearby food" + (fresh ? ` (${fresh} new)` : "");
@@ -89,8 +82,9 @@
         feed.append(card);
       }
     }
+    window.FRSFeedReload = () => load(true);
     load().catch((e) => feed.replaceChildren(ui.el("p", { class: "msg err" }, e.message)));
     clearInterval(timer);
-    timer = setInterval(() => load().catch(() => {}), 15000);
+    timer = setInterval(() => load(false).catch(() => {}), 15000);
   });
 })();

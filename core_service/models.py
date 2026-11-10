@@ -160,14 +160,34 @@ class Review(Base):
 
 
 class ListingStatus:
-    """Food ticket lifecycle (spec section 5). Phase 3 covers active -> assigned, cancelled and expired;
-    collection, delivery and storage states are added in Phase 4."""
+    """Food ticket lifecycle (spec section 5):
+    active -> assigned -> collected -> delivered | stored, with exits cancelled, expired, rejected (at inspection)
+    and disposed (expired before it could be handed over)."""
 
     ACTIVE = "active"
     ASSIGNED = "assigned"
+    COLLECTED = "collected"
+    DELIVERED = "delivered"
+    STORED = "stored"
+    REJECTED = "rejected"
+    DISPOSED = "disposed"
     CANCELLED = "cancelled"
     EXPIRED = "expired"
-    ALL = (ACTIVE, ASSIGNED, CANCELLED, EXPIRED)
+    ALL = (ACTIVE, ASSIGNED, COLLECTED, DELIVERED, STORED, REJECTED, DISPOSED, CANCELLED, EXPIRED)
+    IN_PROGRESS = (ASSIGNED, COLLECTED)  # the collecting agent is busy with this listing
+
+
+class AssignmentStatus:
+    """Collection assignment (spec section 5): accepted -> en_route -> collected | rejected;
+    collected -> delivered | stored | disposed. Released assignments are removed and logged as events."""
+
+    ACCEPTED = "accepted"
+    EN_ROUTE = "en_route"
+    COLLECTED = "collected"
+    REJECTED = "rejected"
+    DELIVERED = "delivered"
+    STORED = "stored"
+    DISPOSED = "disposed"
 
 
 class FoodListing(Base):
@@ -232,3 +252,72 @@ class Assignment(Base):
     status: Mapped[str] = mapped_column(String(20), default="accepted", index=True)
     distance_km: Mapped[float] = mapped_column(Float)
     accepted_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
+
+
+class Inspection(Base):
+    """Module 8: what the collector found at the restaurant. Food counts as collected only once this exists."""
+
+    __tablename__ = "inspections"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    listing_id: Mapped[str] = mapped_column(ForeignKey("food_listings.id", ondelete="CASCADE"), unique=True)
+    agent_id: Mapped[str] = mapped_column(ForeignKey("accounts.id", ondelete="CASCADE"), index=True)
+    outcome: Mapped[str] = mapped_column(String(20))  # full / partial / rejected
+    listed_quantity: Mapped[float] = mapped_column(Float)
+    actual_quantity: Mapped[float] = mapped_column(Float)
+    observed_condition: Mapped[str] = mapped_column(String(20))  # fresh / good / fair / spoiled
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
+
+
+class Recipient(Base):
+    """A recipient organisation an NGO delivers to (orphanage, shelter, old-age home, ...)."""
+
+    __tablename__ = "recipients"
+
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=new_id)
+    ngo_id: Mapped[str] = mapped_column(ForeignKey("accounts.id", ondelete="CASCADE"), index=True)
+    name: Mapped[str] = mapped_column(String(120))
+    kind: Mapped[str] = mapped_column(String(30))
+    address: Mapped[str] = mapped_column(String(300))
+    latitude: Mapped[float | None] = mapped_column(Float, nullable=True)
+    longitude: Mapped[float | None] = mapped_column(Float, nullable=True)
+    contact_phone: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
+
+
+class Handover(Base):
+    """Module 9: where collected food went. ``kind`` is delivered (to a recipient), stored (at the NGO),
+    distributed (from storage to a recipient) or disposed."""
+
+    __tablename__ = "handovers"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    listing_id: Mapped[str] = mapped_column(ForeignKey("food_listings.id", ondelete="CASCADE"), index=True)
+    agent_id: Mapped[str] = mapped_column(ForeignKey("accounts.id", ondelete="CASCADE"), index=True)
+    kind: Mapped[str] = mapped_column(String(20))
+    quantity: Mapped[float] = mapped_column(Float)
+    recipient_id: Mapped[str | None] = mapped_column(ForeignKey("recipients.id"), nullable=True)
+    storage_item_id: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    received_by: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
+
+
+class StorageItem(Base):
+    """Food kept at an NGO location for later distribution, with expiry tracking."""
+
+    __tablename__ = "storage_items"
+
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=new_id)
+    ngo_id: Mapped[str] = mapped_column(ForeignKey("accounts.id", ondelete="CASCADE"), index=True)
+    listing_id: Mapped[str] = mapped_column(ForeignKey("food_listings.id", ondelete="CASCADE"), unique=True)
+    food_type: Mapped[str] = mapped_column(String(120))
+    unit: Mapped[str] = mapped_column(String(20))
+    stored_quantity: Mapped[float] = mapped_column(Float)
+    remaining_quantity: Mapped[float] = mapped_column(Float)
+    location: Mapped[str] = mapped_column(String(300))
+    expires_at: Mapped[datetime] = mapped_column(UTCDateTime(), index=True)
+    status: Mapped[str] = mapped_column(String(20), default="in_stock", index=True)  # in_stock/distributed/disposed
+    stored_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow, onupdate=utcnow)

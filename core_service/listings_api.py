@@ -54,6 +54,7 @@ class ListingIn(BaseModel):
 
 def build_router(*, get_db, caller_portal, require_admin, upload_dir: Path, radius_km: float) -> APIRouter:
     r = APIRouter(prefix="/internal")
+    r.pickup_view = None  # set below; reused by the Phase 4 router
 
     def actor(db: Session, actor_id: str, portal: str, role: str) -> Account:
         acc = db.get(Account, actor_id)
@@ -158,4 +159,5 @@ def build_router(*, get_db, caller_portal, require_admin, upload_dir: Path, radi
             q = q.where(FoodListing.status == status)
         return [listings.listing_view(db, x, audience="admin") for x in db.scalars(q)]
 
+    r.pickup_view = pickup_view
     return r
