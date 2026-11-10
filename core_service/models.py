@@ -321,3 +321,28 @@ class StorageItem(Base):
     status: Mapped[str] = mapped_column(String(20), default="in_stock", index=True)  # in_stock/distributed/disposed
     stored_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow, onupdate=utcnow)
+
+
+class AgentLocation(Base):
+    """Module 10: an NGO agent's most recent shared position (one row per agent)."""
+
+    __tablename__ = "agent_locations"
+
+    agent_id: Mapped[str] = mapped_column(ForeignKey("accounts.id", ondelete="CASCADE"), primary_key=True)
+    latitude: Mapped[float] = mapped_column(Float)
+    longitude: Mapped[float] = mapped_column(Float)
+    accuracy_m: Mapped[float | None] = mapped_column(Float, nullable=True)
+    updated_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
+
+
+class LocationPing(Base):
+    """Movement trail, recorded only while the agent is working on a pickup (operational purpose only)."""
+
+    __tablename__ = "location_pings"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    agent_id: Mapped[str] = mapped_column(ForeignKey("accounts.id", ondelete="CASCADE"), index=True)
+    listing_id: Mapped[str] = mapped_column(ForeignKey("food_listings.id", ondelete="CASCADE"), index=True)
+    latitude: Mapped[float] = mapped_column(Float)
+    longitude: Mapped[float] = mapped_column(Float)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)

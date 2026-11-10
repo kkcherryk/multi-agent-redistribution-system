@@ -52,6 +52,14 @@ The phased roadmap is in [PHASES.md](PHASES.md).
   receiver's name, or stored at the NGO and given out later in parts. Expired food is recorded as disposed.
 * The restaurant and the host see the full history of each listing; the host has an "NGO storage" tab.
 
+## Phase 5: host live map
+
+* The host's "Live map" tab (OpenStreetMap) shows restaurants, open food, pickups in progress with the agent's
+  movement trail, and NGO agents (live, last known, or at their NGO base). It refreshes every 10 seconds, and
+  clicking an agent opens a details panel.
+* NGO agents share their live location with "Start sharing my location" (only while Available or on a pickup).
+* The map needs an internet connection to load the map tiles.
+
 ## Run it
 
 ```bash

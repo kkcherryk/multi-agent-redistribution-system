@@ -2,6 +2,7 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Host Admin Portal</title>
 <link rel="stylesheet" href="/static/common/portal.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>:root{--accent:#6e40c9}</style>
 </head><body>
 <header><h1>Host Admin Portal</h1><div><button id="logout" class="hidden" type="button">Sign out</button>
@@ -19,6 +20,7 @@
   <section id="dashboard" class="hidden">
     <div class="panel"><h2 id="welcome"></h2><dl id="profile"></dl></div>
     <div class="section-tabs" id="admin-tabs">
+      <button type="button" data-tab="map">Live map</button>
       <button type="button" data-tab="queue" class="active">Review queue <span id="queue-count"></span></button>
       <button type="button" data-tab="listings">Food listings</button>
       <button type="button" data-tab="storage">NGO storage</button>
@@ -26,6 +28,15 @@
       <button type="button" data-tab="accounts">All accounts</button>
       <button type="button" data-tab="events">Activity</button>
     </div>
+    <div id="tab-map" class="panel hidden"><h2>Live operations map</h2>
+      <div id="map-summary" class="row" style="margin-bottom:10px"></div>
+      <div class="map-layout"><div id="map"></div><aside id="agent-panel" class="card"></aside></div>
+      <div class="legend note">
+        <span><i style="background:#1f6feb"></i>Restaurant</span><span><i style="background:#c4620a"></i>Open food</span>
+        <span><i style="background:#8250df"></i>NGO on the way</span><span><i style="background:#1a7f37"></i>Food collected</span>
+        <span><i style="background:#1a7f37;outline:2px solid #fff"></i>Agent available (solid = live)</span>
+        <span><i style="background:#cf222e"></i>Agent unavailable</span><span><i style="background:transparent;border:2px dashed #888"></i>Last known / NGO base</span>
+      </div></div>
     <div id="tab-queue" class="panel"><h2>Applications waiting for review</h2>
       <div class="row" style="margin-bottom:12px"><label for="queue-status" style="margin:0">Show</label>
         <select id="queue-status" style="width:auto"><option value="under_review">Under review</option>
@@ -42,6 +53,8 @@
 <script>
 window.PORTAL = { title: 'Host Admin Portal' };
 </script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="/static/portal/map.js"></script>
 <script src="/static/portal/admin.js"></script>
 <script src="/static/common/portal.js"></script>
 </body></html>

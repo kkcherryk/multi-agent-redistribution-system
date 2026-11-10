@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, Response
 from pydantic import BaseModel
 
 from portals.common import create_portal_app, default_core_client, document_response
@@ -52,6 +52,20 @@ def create_ngo_app(core: CoreClient, jwt_secret: str, **kwargs) -> FastAPI:
         if action not in PICKUP_ACTIONS:
             raise HTTPException(status_code=404, detail="unknown action")
         return core.pickup_action(listing_id, action, account["id"], body)
+
+    # ---- Phase 5 (Module 10): live location sharing for the host map
+    @app.put("/api/location")
+    def put_location(body: dict, account: dict = Depends(agent)):
+        return core.put_location(account["id"], body)
+
+    @app.delete("/api/location", status_code=204)
+    def stop_location(account: dict = Depends(agent)):
+        core.stop_location(account["id"])
+        return Response(status_code=204)
+
+    @app.get("/api/location")
+    def get_location(account: dict = Depends(agent)):
+        return core.get_location(account["id"])
 
     @app.get("/api/recipients")
     def recipients(account: dict = Depends(agent)):
