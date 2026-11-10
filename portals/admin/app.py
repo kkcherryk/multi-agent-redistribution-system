@@ -57,6 +57,10 @@ def create_admin_app(core: CoreClient, jwt_secret: str, **kwargs) -> FastAPI:
     def listings(status: str | None = None, _: dict = Depends(host)):
         return core.all_listings(status)
 
+    @app.get("/api/map")
+    def host_map(_: dict = Depends(host)):
+        return core.host_map()
+
     @app.get("/api/storage")
     def storage(_: dict = Depends(host)):
         return core.all_storage()

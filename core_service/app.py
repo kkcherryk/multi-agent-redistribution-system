@@ -16,9 +16,10 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from shared.config import DATA_DIR, PORTAL_ROLE, ROLES
 
-from . import accounts, listings, onboarding
+from . import accounts, listings, onboarding, tracking
 from .listings_api import build_router as build_listings_router
 from .fulfilment_api import build_router as build_fulfilment_router
+from .tracking import build_router as build_tracking_router
 from .db import make_engine
 from .models import Account, AccountStatus, Base, Document, Event, FoodListing, NgoProfile
 from .schemas import (PROFILE_SCHEMAS, AccountOut, AvailabilityIn, CredentialsIn, EventOut, RegisterIn,
@@ -41,7 +42,7 @@ def create_core_app(db_url: str, service_keys: dict[str, str], upload_dir: Path 
     SessionLocal = sessionmaker(engine, expire_on_commit=False)
     upload_dir = Path(upload_dir or DATA_DIR / "uploads")
 
-    app = FastAPI(title="FRS Core Data Service", version="0.4.0")
+    app = FastAPI(title="FRS Core Data Service", version="0.5.0")
     app.state.engine = engine
     app.state.SessionLocal = SessionLocal
     app.state.upload_dir = upload_dir
@@ -210,6 +211,8 @@ def create_core_app(db_url: str, service_keys: dict[str, str], upload_dir: Path 
             raise HTTPException(status_code=403, detail="availability is set from the NGO portal")
         account = own_account(db, account_id, portal)
         profile = onboarding.set_availability(db, account, body.available, portal=portal)
+        if not body.available and tracking._current_pickup(db, account.id) is None:
+            tracking.stop_sharing(db, account)  # Module 10 privacy: no location kept once off duty
         if body.available and account.status == AccountStatus.VERIFIED:
             # Alert a newly available agent about food already waiting nearby (notify_nearby skips duplicates).
             listings.expire_due(db)
@@ -259,6 +262,9 @@ def create_core_app(db_url: str, service_keys: dict[str, str], upload_dir: Path 
     # ------------------------------------------------------------------ Phase 4: pickup, delivery & storage
     app.include_router(build_fulfilment_router(get_db=get_db, caller_portal=caller_portal, require_admin=require_admin,
                                                radius_km=match_radius_km, pickup_view=listings_router.pickup_view))
+
+    # ------------------------------------------------------------------ Phase 5: live locations & host map
+    app.include_router(build_tracking_router(get_db=get_db, caller_portal=caller_portal, require_admin=require_admin))
     return app
 
 

@@ -66,3 +66,10 @@ input[type=file]{padding:6px}
 .status.collected{color:#8250df;border-color:#8250df}.status.delivered,.status.stored{color:var(--ok);border-color:var(--ok)}
 .status.rejected,.status.disposed{color:var(--err);border-color:var(--err)}
 details summary{cursor:pointer;margin:8px 0}
+main:has(#tab-map:not(.hidden)){max-width:1200px}
+.map-layout{display:grid;grid-template-columns:1fr 260px;gap:12px}
+#map{height:520px;border-radius:8px;border:1px solid var(--line);z-index:0}
+#agent-panel{margin:0;font-size:.9rem}#agent-panel dl{grid-template-columns:max-content 1fr;font-size:.85rem}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:10px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:6px;vertical-align:middle}
+@media (max-width:800px){.map-layout{grid-template-columns:1fr}#map{height:380px}}

@@ -139,3 +139,16 @@ class CoreClient:
 
     def all_storage(self) -> list[dict]:
         return self._request("GET", "/internal/storage")
+
+    # ---- Phase 5: live locations and host map
+    def put_location(self, agent_id: str, body: dict) -> dict:
+        return self._request("PUT", f"/internal/agents/{agent_id}/location", json=body)
+
+    def stop_location(self, agent_id: str) -> None:
+        self._request("DELETE", f"/internal/agents/{agent_id}/location")
+
+    def get_location(self, agent_id: str) -> dict:
+        return self._request("GET", f"/internal/agents/{agent_id}/location")
+
+    def host_map(self) -> dict:
+        return self._request("GET", "/internal/map")
