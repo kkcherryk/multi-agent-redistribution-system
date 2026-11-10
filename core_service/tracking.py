@@ -9,7 +9,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from .listings import expire_due
-from .models import (Account, AccountStatus, AgentLocation, Assignment, FoodListing, Handover, ListingStatus,
+from .models import (Account, AccountStatus, AgentLocation, Assignment, Document, FoodListing, Handover, ListingStatus,
                      LocationPing, NgoProfile, RestaurantProfile, utcnow)
 from .onboarding import RuleError
 
@@ -77,6 +77,10 @@ def map_data(db: Session) -> dict:
                                  .group_by(Handover.kind)).all())
         agents.append({
             "id": acc.id, "ngo_name": acc.display_name, "representative_name": prof.representative_name,
+            # Representative photo from NGO registration, so the host can recognise the agent (host-only document).
+            "photo_id": db.scalar(select(Document.id).where(Document.account_id == acc.id,
+                                                            Document.kind == "representative_photo")
+                                  .order_by(Document.created_at.desc()).limit(1)),
             "phone": acc.phone, "available": prof.available, "base": {"latitude": prof.latitude,
                                                                     "longitude": prof.longitude, "address": prof.address},
             "location": location_dict(db.get(AgentLocation, acc.id)),

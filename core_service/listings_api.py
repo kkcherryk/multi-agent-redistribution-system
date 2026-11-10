@@ -52,7 +52,8 @@ class ListingIn(BaseModel):
         return v
 
 
-def build_router(*, get_db, caller_portal, require_admin, upload_dir: Path, radius_km: float) -> APIRouter:
+def build_router(*, get_db, caller_portal, require_admin, upload_dir: Path, radius_km: float,
+                 on_listing_created=None) -> APIRouter:
     r = APIRouter(prefix="/internal")
     r.pickup_view = None  # set below; reused by the Phase 4 router
 
@@ -81,6 +82,8 @@ def build_router(*, get_db, caller_portal, require_admin, upload_dir: Path, radi
         blob = await photo.read(listings.MAX_UPLOAD_BYTES + 1)
         listing = listings.create_listing(db, restaurant, body.model_dump(), (photo.filename or "food", blob),
                                           upload_dir=upload_dir, radius_km=radius_km, portal=portal)
+        if on_listing_created is not None:
+            on_listing_created(db, listing)
         db.commit()
         return listings.listing_view(db, listing, audience="restaurant")
 

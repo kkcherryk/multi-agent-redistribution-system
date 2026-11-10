@@ -73,3 +73,7 @@ main:has(#tab-map:not(.hidden)){max-width:1200px}
 .legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:10px}
 .legend i{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:6px;vertical-align:middle}
 @media (max-width:800px){.map-layout{grid-template-columns:1fr}#map{height:380px}}
+.pill.recommended{background:#1f6feb;color:#fff;border-color:#1f6feb}
+.agent-msg{font-size:.85rem;border-bottom:1px solid var(--line);padding:6px 0}
+.agent-photo{display:block;width:120px;height:120px;object-fit:cover;border-radius:50%;border:3px solid var(--line);margin:0 auto 10px}
+.agent-photo.none{display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:.8rem}

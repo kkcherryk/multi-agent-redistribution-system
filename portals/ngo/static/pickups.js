@@ -149,7 +149,19 @@
                 `)${r.contact_name ? " · contact " + r.contact_name : ""}${r.phone ? " · " + r.phone : ""}`);
     b.append(meta, ui.el("div", { class: "meta" }, `Best before ${fmt(it.expires_at)}${it.pickup_notes ? " · " + it.pickup_notes : ""}`));
     b.append(summary(ui, it));
-    if (live) b.append(actions(ui, it, reload));
+    if (live) {
+      const routeBox = ui.el("div", { class: "card", style: "margin-top:8px" });
+      routeBox.append(ui.el("span", { class: "note" }, "Planning route…"));
+      b.append(routeBox, actions(ui, it, reload));
+      ui.api(`/pickups/${it.id}/route`).then((r) => {
+        routeBox.replaceChildren(ui.el("strong", {}, r.backup_collection ? "Backup collection route (store at your NGO)" : "Suggested route"));
+        routeBox.append(ui.el("div", { class: "meta" },
+          `${r.order.join(" → ")} · about ${r.total_km} km, ${Math.round(r.total_minutes)} min`));
+        for (const l of r.legs) routeBox.append(ui.el("div", { class: "meta" }, `${l.from} → ${l.to}: ${l.km} km, ~${Math.round(l.minutes)} min`));
+        routeBox.append(ui.el("a", { href: r.directions_url, target: "_blank", rel: "noopener" }, "Open turn-by-turn directions"));
+        routeBox.append(ui.el("div", { class: "note" }, "Estimate: " + r.assumptions));
+      }).catch((e) => routeBox.replaceChildren(ui.el("span", { class: "note" }, "Route unavailable: " + e.message)));
+    }
     c.append(b);
     return c;
   }
@@ -174,14 +186,17 @@
     const [k1, kind] = select(ui, Object.entries(KIND), "Type");
     const [a1, address] = input(ui, { required: "", maxlength: "300" }, "Address");
     const [p1, phone] = input(ui, { maxlength: "20" }, "Contact phone (optional)");
+    const [la1, rlat] = input(ui, { type: "number", step: "any", min: "-90", max: "90" }, "Latitude (for route planning)");
+    const [lo1, rlon] = input(ui, { type: "number", step: "any", min: "-180", max: "180" }, "Longitude");
     a1.style.gridColumn = "1/-1";
     const add = ui.el("button", { type: "submit", class: "primary", style: "grid-column:1/-1" }, "Add recipient");
     const fmsg = ui.el("div", { class: "msg", style: "grid-column:1/-1" });
-    f.append(n1, k1, a1, p1, add, fmsg);
+    f.append(n1, k1, a1, p1, la1, lo1, add, fmsg);
     f.addEventListener("submit", async (e) => {
       e.preventDefault();
       try {
-        await ui.api("/recipients", { method: "POST", body: JSON.stringify({ name: name.value, kind: kind.value, address: address.value, contact_phone: phone.value || null }) });
+        await ui.api("/recipients", { method: "POST", body: JSON.stringify({ name: name.value, kind: kind.value, address: address.value, contact_phone: phone.value || null,
+          latitude: rlat.value === "" ? null : Number(rlat.value), longitude: rlon.value === "" ? null : Number(rlon.value) }) });
         f.reset();
         fmsg.textContent = "Recipient added.";
         fmsg.className = "msg ok";

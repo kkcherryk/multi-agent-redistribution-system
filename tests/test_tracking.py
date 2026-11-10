@@ -115,3 +115,12 @@ def test_map_and_location_access_rules(world, portals, core):
     assert world["rest"].put("/api/location", json=HERE).status_code in (404, 405)
     signed_out = portals["admin"].__class__(portals["admin"].app)
     assert signed_out.get("/api/map").status_code == 401
+
+
+def test_map_shows_agent_photo_to_host_only(world, core):
+    agent = world["host"].get("/api/map").json()["agents"][0]
+    assert agent["photo_id"]
+    photo = world["host"].get(f"/api/documents/{agent['photo_id']}")
+    assert photo.status_code == 200 and photo.headers["content-type"].startswith("image/")
+    other = world["make_ngo"]("other@example.org")
+    assert other.get(f"/api/documents/{agent['photo_id']}").status_code == 404  # not another NGO's photo

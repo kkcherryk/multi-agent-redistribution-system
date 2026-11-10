@@ -40,6 +40,15 @@ def create_portal_app(*, portal: str, core: CoreClient, jwt_secret: str, static_
     app.state.portal = portal
     app.state.core = core
 
+    @app.middleware("http")
+    async def revalidate_pages_and_scripts(request: Request, call_next):
+        # Without this, browsers keep using cached copies of the portal's scripts after an update.
+        # "no-cache" still lets them reuse unchanged files after a quick check (304 Not Modified).
+        response = await call_next(request)
+        if request.url.path == "/" or request.url.path.startswith("/static/"):
+            response.headers["Cache-Control"] = "no-cache"
+        return response
+
     @app.exception_handler(CoreError)
     def _core_error(_request: Request, exc: CoreError):
         # Surface the core's 4xx decisions, but never forward a 401 about *service* auth as a user 401.

@@ -44,6 +44,12 @@
       panel.append(ui.el("p", { class: "note" }, "Click an NGO agent on the map to see their details."));
       return;
     }
+    if (a.photo_id) {
+      panel.append(ui.el("img", { class: "agent-photo", src: `/api/documents/${a.photo_id}`,
+                                  alt: `Photo of ${a.representative_name}` }));
+    } else {
+      panel.append(ui.el("div", { class: "agent-photo none" }, "No photo"));
+    }
     panel.append(ui.el("h3", { style: "margin-top:0" }, a.representative_name));
     panel.append(ui.el("div", { class: "note" }, a.ngo_name));
     panel.append(ui.el("div", { class: "badges", style: "margin:8px 0" }));

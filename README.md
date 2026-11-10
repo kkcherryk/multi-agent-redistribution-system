@@ -60,6 +60,16 @@ The phased roadmap is in [PHASES.md](PHASES.md).
 * NGO agents share their live location with "Start sharing my location" (only while Available or on a pickup).
 * The map needs an internet connection to load the map tiles.
 
+## Phase 6: multi-agent layer
+
+* Two backend agents run every 30 seconds and exchange messages (all logged):
+  * **Logistics agent:** ranks the best collectors for new food (shown as "Recommended for you" in the NGO
+    feed) and plans each pickup route (agent → restaurant → nearest recipient or NGO storage) with a directions link.
+  * **Backup agent:** spots food at risk, alerts agents up to 10 km away, then asks opted-in backup NGOs one
+    at a time to collect and store it, and flags the host if nobody can.
+* NGOs can opt in to backup collections and accept or decline requests. The host has an "Agents" tab, an
+  "Escalate" button for open food, and "Run agents now".
+
 ## Run it
 
 ```bash

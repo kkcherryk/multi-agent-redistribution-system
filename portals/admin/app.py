@@ -57,6 +57,19 @@ def create_admin_app(core: CoreClient, jwt_secret: str, **kwargs) -> FastAPI:
     def listings(status: str | None = None, _: dict = Depends(host)):
         return core.all_listings(status)
 
+    # ---- Phase 6: agent system oversight
+    @app.get("/api/agent-system")
+    def agent_system(_: dict = Depends(host)):
+        return core.agent_system()
+
+    @app.post("/api/agent-system/run")
+    def run_agents(_: dict = Depends(host)):
+        return core.run_agents()
+
+    @app.post("/api/listings/{listing_id}/escalate")
+    def escalate(listing_id: str, _: dict = Depends(host)):
+        return core.escalate_listing(listing_id)
+
     @app.get("/api/map")
     def host_map(_: dict = Depends(host)):
         return core.host_map()
