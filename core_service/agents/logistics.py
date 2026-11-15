@@ -13,11 +13,12 @@ from datetime import timedelta
 from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session
 
-from .. import listings
+from .. import listings, trust
 from ..models import (Account, AccountStatus, AgentLocation, AgentMessage, AgentRecommendation, Assignment,
                       BackupRequest, BackupVolunteer, FoodListing, Handover, ListingStatus, NgoProfile, Recipient,
                       utcnow)
 from .routing import directions_url, plan_route, road_km, travel_minutes
+from .ngo_agents import address as ngo_address
 from .runtime import Agent
 
 TOP_N = 3
@@ -49,22 +50,48 @@ class LogisticsAgent(Agent):
         self.radius_km = radius_km
 
     # ---------------------------------------------------------------- collector ranking
-    def rank_collectors(self, db: Session, listing: FoodListing) -> list[dict]:
-        ranked = []
-        for agent, profile, _straight in listings.eligible_agents(db, listing, self.radius_km):
-            start, origin = agent_position(db, agent.id, profile)
-            km = road_km(start, (listing.latitude, listing.longitude))
-            eta = travel_minutes(km)
-            jobs = recent_jobs(db, agent.id)
-            score = eta + FAIRNESS_MIN_PER_RECENT_JOB * jobs
-            ranked.append({"agent_id": agent.id, "name": profile.representative_name, "km": km, "eta": eta,
-                           "score": score, "reason": f"~{eta:.0f} min from {origin} ({km:.1f} km by road)"
-                           + (f"; {jobs} pickup(s) in the last 24 h" if jobs else "")})
-        ranked.sort(key=lambda r: (r["score"], r["km"]))
-        return ranked
+    def nearby_ngos(self, db: Session, listing: FoodListing) -> list[str]:
+        """Verified NGOs whose agent (live position or NGO base) is within the radius: they get the call."""
+        out = []
+        for acc, profile in db.execute(select(Account, NgoProfile).join(NgoProfile, NgoProfile.account_id == Account.id)
+                                       .where(Account.role == "ngo", Account.status == AccountStatus.VERIFIED)):
+            start, _ = agent_position(db, acc.id, profile)
+            if road_km(start, (listing.latitude, listing.longitude)) / 1.35 <= self.radius_km:
+                out.append(acc.id)
+        return out
 
-    def recommend(self, db: Session, listing: FoodListing) -> list[AgentRecommendation]:
-        ranked = self.rank_collectors(db, listing)[:TOP_N]
+    def rank_collectors(self, db: Session, listing: FoodListing, *, announce: bool = False) -> list[dict]:
+        """Contract-Net round (Phase 7): call for proposals -> proposals/refusals -> score -> ranking.
+
+        Bid total (lower is better) = travel minutes + trust penalty ((100 - trust) / 10, max 10)
+        + fairness penalty (2 min per pickup in the last 24 h). With ``announce`` every message is logged.
+        """
+        ngo_agents = self.bus.agents["ngo-agents"]
+        proposals, refusals = [], []
+        for agent_id in self.nearby_ngos(db, listing):
+            if announce:
+                reply = self.send(db, ngo_address(agent_id), "call_for_proposals", listing_id=listing.id)
+            else:
+                reply = ngo_agents.bid(db, agent_id, listing)
+            if reply["decision"] != "propose":
+                refusals.append({"agent_id": agent_id, "reason": reply["reason"]})
+                continue
+            trust_pen = trust.bid_trust_penalty(reply["trust"])
+            fair_pen = FAIRNESS_MIN_PER_RECENT_JOB * reply["recent_jobs"]
+            total = reply["eta_minutes"] + trust_pen + fair_pen
+            reason = (f"~{reply['eta_minutes']:.0f} min from {reply['origin']} ({reply['km']:.1f} km by road); "
+                      f"trust {reply['trust']:.0f} ({reply['trust_confidence']} confidence)"
+                      + (f"; {reply['recent_jobs']} pickup(s) in the last 24 h" if reply["recent_jobs"] else ""))
+            proposals.append({"agent_id": agent_id, "name": reply["name"], "km": reply["km"],
+                              "eta": reply["eta_minutes"], "trust": reply["trust"], "trust_penalty": round(trust_pen, 1),
+                              "fairness_penalty": fair_pen, "score": round(total, 1), "reason": reason})
+        proposals.sort(key=lambda r: (r["score"], r["km"]))
+        self._last_refusals = refusals
+        return proposals
+
+    def recommend(self, db: Session, listing: FoodListing, *, announce: bool = False) -> list[AgentRecommendation]:
+        bids = self.rank_collectors(db, listing, announce=announce)
+        ranked = bids[:TOP_N]
         old = [r.agent_id for r in db.scalars(select(AgentRecommendation)
                                               .where(AgentRecommendation.listing_id == listing.id)
                                               .order_by(AgentRecommendation.rank))]
@@ -77,14 +104,15 @@ class LogisticsAgent(Agent):
             recs.append(rec)
         db.flush()
         new = [r.agent_id for r in recs]
-        if new != old:  # only talk when the suggestion actually changed
+        if new != old or announce:  # only talk when the outcome changed (or on the first round)
             for rec in recs:
-                if rec.agent_id not in old:
-                    self.send(db, rec.agent_id, "recommended_pickup", listing_id=listing.id, rank=rec.rank,
+                if rec.agent_id not in old or announce:
+                    self.send(db, ngo_address(rec.agent_id), "award", listing_id=listing.id, rank=rec.rank,
                               eta_minutes=rec.eta_minutes)
-            self.send(db, "host", "collectors_ranked", listing_id=listing.id,
-                      ranking=[{"agent_id": r["agent_id"], "name": r["name"], "eta_minutes": round(r["eta"], 1),
-                                "reason": r["reason"]} for r in ranked])
+            self.send(db, "host", "negotiation_round", listing_id=listing.id,
+                      bids=[{k: b[k] for k in ("agent_id", "name", "eta", "trust", "trust_penalty",
+                                               "fairness_penalty", "score")} for b in bids],
+                      refusals=self._last_refusals, recommended=new)
         return recs
 
     def tick(self, db: Session) -> None:
@@ -141,8 +169,8 @@ class LogisticsAgent(Agent):
     # ---------------------------------------------------------------- messages from other agents
     def handle(self, db: Session, msg: AgentMessage) -> dict | None:
         listing = db.get(FoodListing, msg.listing_id) if msg.listing_id else None
-        if msg.topic == "recommend" and listing is not None:
-            return {"recommended": [r.agent_id for r in self.recommend(db, listing)]}
+        if msg.topic in ("recommend", "food_posted") and listing is not None:
+            return {"recommended": [r.agent_id for r in self.recommend(db, listing, announce=msg.topic == "food_posted")]}
         if msg.topic == "rank_backup" and listing is not None:
             return {"candidates": self.rank_backup(db, listing, set(msg.payload.get("exclude", [])))}
         return None

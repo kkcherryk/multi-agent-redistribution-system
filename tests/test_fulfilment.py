@@ -202,3 +202,13 @@ def test_unknown_pickup_action_and_wrong_portal(world, accepted, core):
     rest_id = world["rest"].get("/api/me").json()["id"]
     assert core.post(f"/internal/pickups/{accepted}/start", params={"agent_id": rest_id},
                      headers=svc("restaurant")).status_code == 403
+
+
+def test_uncollected_pickup_expires_and_frees_the_agent(core_app, world, accepted):
+    with sessionmaker(core_app.state.engine)() as s:
+        s.get(FoodListing, accepted).expires_at = now() - timedelta(minutes=1)
+        s.commit()
+    past = world["ngo"].get("/api/pickups").json()[0]
+    assert past["status"] == "expired" and past["assignment"]["status"] == "expired"
+    assert world["ngo"].post(f"/api/listings/{post(world['rest']).json()['id']}/accept").status_code == 200
+    assert "pickup.expired" in [e["type"] for e in world["host"].get("/api/events").json()]

@@ -123,6 +123,8 @@ def build_router(*, get_db, caller_portal, require_admin, upload_dir: Path, radi
     @r.get("/agents/{agent_id}/pickups")
     def pickups(agent_id: str, portal: str = Depends(caller_portal), db: Session = Depends(get_db)):
         actor(db, agent_id, portal, "ngo")
+        listings.expire_due(db)
+        db.commit()
         q = (select(FoodListing).join(Assignment, Assignment.listing_id == FoodListing.id)
              .where(Assignment.agent_id == agent_id).order_by(Assignment.accepted_at.desc()))
         return [pickup_view(db, x) for x in db.scalars(q)]

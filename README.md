@@ -70,6 +70,14 @@ The phased roadmap is in [PHASES.md](PHASES.md).
 * NGOs can opt in to backup collections and accept or decline requests. The host has an "Agents" tab, an
   "Escalate" button for open food, and "Run agents now".
 
+## Phase 7: trust scores and agent negotiation
+
+* **Trust (host only, decision support):** every NGO and restaurant gets a 0–100 score with a confidence level,
+  plain-language reasons and review flags; the host can add notes. A new account starts at 50.
+* **Negotiation (Contract-Net):** when food is posted, the restaurant's agent announces it, the logistics agent
+  asks nearby NGO agents for offers, each answers with an offer (travel time, trust) or a refusal, and the best
+  offers become "Recommended". People still press Accept. Every round is shown in the host's Agents tab.
+
 ## Run it
 
 ```bash

@@ -253,6 +253,6 @@ def test_backup_rules_and_access(world, core):
 def test_agent_status_and_message_log(world):
     post(world["rest"])
     data = world["host"].get("/api/agent-system").json()
-    assert {a["name"] for a in data["agents"]} == {"logistics", "backup"}
-    ranked = [m for m in data["messages"] if m["topic"] == "collectors_ranked"]
-    assert ranked and ranked[0]["sender"] == "logistics" and ranked[0]["payload"]["ranking"][0]["eta_minutes"] > 0
+    assert {a["name"] for a in data["agents"]} == {"logistics", "backup", "ngo-agents"}
+    rounds = [m for m in data["messages"] if m["topic"] == "negotiation_round"]
+    assert rounds and rounds[0]["sender"] == "logistics" and rounds[0]["payload"]["bids"][0]["eta"] > 0

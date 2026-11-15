@@ -202,7 +202,8 @@
 
   function showTab(name) {
     for (const b of document.querySelectorAll("#admin-tabs button")) b.classList.toggle("active", b.dataset.tab === name);
-    for (const t of ["map", "queue", "listings", "agents-ai", "storage", "agents", "accounts", "events"]) $("tab-" + t).classList.toggle("hidden", t !== name);
+    for (const t of ["map", "queue", "listings", "agents-ai", "trust", "storage", "agents", "accounts", "events"]) $("tab-" + t).classList.toggle("hidden", t !== name);
+    if (name === "trust" && window.FRSTrust) window.FRSTrust.show(ui);
     if (name === "agents-ai" && window.FRSAgents) window.FRSAgents.show(ui);
     if (window.FRSMap) { if (name === "map") window.FRSMap.show(ui); else window.FRSMap.hide(); }
   }

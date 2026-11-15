@@ -416,3 +416,17 @@ class BackupRequest(Base):
     eta_minutes: Mapped[float] = mapped_column(Float)
     created_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
     responded_at: Mapped[datetime | None] = mapped_column(UTCDateTime(), nullable=True)
+
+
+# ---------------------------------------------------------------- Phase 7: trust assessment (Module 12)
+
+class TrustNote(Base):
+    """A host's note on an account's trust record (review actions are recorded, never automatic)."""
+
+    __tablename__ = "trust_notes"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    account_id: Mapped[str] = mapped_column(ForeignKey("accounts.id", ondelete="CASCADE"), index=True)
+    author_id: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    note: Mapped[str] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)

@@ -5,6 +5,13 @@
   const STAGE = { widened: "Wider alert sent", backup_requested: "Backup collector asked", needs_host: "Needs host attention",
                   resolved: "Resolved" };
   const TOPIC = {
+    food_posted: () => "Food posted — asked logistics to start a negotiation round",
+    call_for_proposals: () => "Call for proposals",
+    propose: (p) => `Offer: ~${Math.round(p.eta_minutes)} min, trust ${Math.round(p.trust)} (${p.trust_confidence})`,
+    refuse: (p) => `No offer: ${p.reason}`,
+    award: (p) => `Recommended #${p.rank} (~${Math.round(p.eta_minutes)} min)`,
+    negotiation_round: (p) => `Negotiation: ${(p.bids || []).map((b) => `${b.name} ${b.eta}+${b.trust_penalty}+${b.fairness_penalty}=${b.score}`).join(", ") || "no offers"}` +
+      ((p.refusals || []).length ? ` · ${p.refusals.length} declined to bid` : ""),
     collectors_ranked: (p) => `Ranked collectors: ${(p.ranking || []).map((r) => `${r.name} ~${Math.round(r.eta_minutes)} min`).join(", ") || "none available"}`,
     recommended_pickup: (p) => `Recommended this food to an agent (rank ${p.rank}, ~${Math.round(p.eta_minutes)} min)`,
     food_at_risk: (p) => `Food at risk (${(p.reasons || []).join("; ")}) — alerted ${p.newly_alerted} more agent(s) within ${p.radius_km} km`,
@@ -29,7 +36,7 @@
     status.replaceChildren();
     for (const a of data.agents) {
       const card = ui.el("div", { class: "card" });
-      card.append(ui.el("strong", {}, a.name === "logistics" ? "Logistics agent" : "Backup collection agent"));
+      card.append(ui.el("strong", {}, { logistics: "Logistics agent", backup: "Backup collection agent", "ngo-agents": "NGO agents" }[a.name] || a.name));
       card.append(ui.el("div", { class: "meta" }, a.description));
       card.append(ui.el("div", { class: "meta" }, `Last run: ${fmt(a.last_tick)}` + (a.last_error ? ` — error: ${a.last_error}` : "")));
       status.append(card);
@@ -51,8 +58,9 @@
     log.replaceChildren();
     for (const m of data.messages) {
       const text = (TOPIC[m.topic] || (() => m.topic))(m.payload || {});
-      const to = m.recipient === "host" ? "host" : (m.recipient.length === 32 ? "an NGO agent" : m.recipient);
-      log.append(ui.el("div", { class: "agent-msg" }, `${fmt(m.created_at)} — ${m.sender} → ${to}: ${text}`));
+      const who = (x) => x === "host" ? "host" : x.startsWith("ngo-agent:") ? "NGO agent" : x.startsWith("restaurant-agent:") ? "restaurant agent" : (x.length === 32 ? "an NGO agent" : x);
+      const to = who(m.recipient);
+      log.append(ui.el("div", { class: "agent-msg" }, `${fmt(m.created_at)} — ${who(m.sender)} → ${to}: ${text}`));
     }
     if (!data.messages.length) log.append(ui.el("p", { class: "note" }, "No agent activity yet."));
   }

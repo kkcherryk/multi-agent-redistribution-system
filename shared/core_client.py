@@ -177,3 +177,10 @@ class CoreClient:
 
     def escalate_listing(self, listing_id: str) -> dict:
         return self._request("POST", f"/internal/listings/{listing_id}/escalate")
+
+    # ---- Phase 7: trust assessment (host only)
+    def trust_overview(self) -> dict:
+        return self._request("GET", "/internal/trust")
+
+    def add_trust_note(self, account_id: str, note: str, author_id: str) -> dict:
+        return self._request("POST", f"/internal/trust/{account_id}/notes", json={"note": note, "author_id": author_id})

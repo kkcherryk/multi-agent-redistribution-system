@@ -12,6 +12,7 @@ from .listings import expire_due
 from .models import (Account, AccountStatus, AgentLocation, Assignment, Document, FoodListing, Handover, ListingStatus,
                      LocationPing, NgoProfile, RestaurantProfile, utcnow)
 from .onboarding import RuleError
+from .trust import ngo_trust
 
 LIVE_SECONDS = 120  # a position older than this is shown as "last known", not live
 MAP_LISTING_STATUSES = (ListingStatus.ACTIVE, ListingStatus.ASSIGNED, ListingStatus.COLLECTED)
@@ -87,6 +88,7 @@ def map_data(db: Session) -> dict:
             "current_pickup": None if pickup is None else {
                 "listing_id": pickup[0].id, "food_type": pickup[0].food_type, "status": pickup[0].status,
                 "step": pickup[1].status, "accepted_at": pickup[1].accepted_at},
+            "trust": {k: v for k, v in ngo_trust(db, acc.id).items() if k in ("score", "confidence")},
             "stats": {"deliveries": counts.get("delivered", 0) + counts.get("distributed", 0),
                       "stored": counts.get("stored", 0), "disposed": counts.get("disposed", 0)},
         })

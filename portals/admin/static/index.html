@@ -24,6 +24,7 @@
       <button type="button" data-tab="queue" class="active">Review queue <span id="queue-count"></span></button>
       <button type="button" data-tab="listings">Food listings</button>
       <button type="button" data-tab="agents-ai">Agents</button>
+      <button type="button" data-tab="trust">Trust</button>
       <button type="button" data-tab="storage">NGO storage</button>
       <button type="button" data-tab="agents">NGO agent directory</button>
       <button type="button" data-tab="accounts">All accounts</button>
@@ -51,6 +52,10 @@
       <h3>Food at risk</h3>
       <div class="table-wrap"><table><thead><tr><th>Updated</th><th>Restaurant</th><th>Food</th><th>Stage</th><th>Why</th><th>Backup requests</th><th>Food status</th></tr></thead><tbody id="escalations"></tbody></table></div>
       <h3>Agent activity</h3><div id="agent-log"></div></div>
+    <div id="tab-trust" class="panel hidden"><h2>Trust scores</h2>
+      <p class="note">Decision support only: scores never block anyone automatically. Score = (successes + 1) / (total + 2) &times; 100; a new account starts at 50 with low confidence.</p>
+      <h3>NGO agents</h3><div id="trust-ngos"></div>
+      <h3>Restaurants</h3><div id="trust-restaurants"></div></div>
     <div id="tab-listings" class="panel hidden"><h2>Food listings</h2><div class="table-wrap"><table><thead><tr><th>Posted</th><th>Restaurant</th><th>Food</th><th>Qty</th><th>Best before</th><th>Status</th><th>Agents alerted</th><th>Collector</th><th>Outcome</th><th></th></tr></thead><tbody id="listings"></tbody></table></div></div>
     <div id="tab-storage" class="panel hidden"><h2>Food stored at NGOs</h2><div class="table-wrap"><table><thead><tr><th>NGO</th><th>Food</th><th>Left / stored</th><th>Location</th><th>Best before</th><th>Status</th></tr></thead><tbody id="storage"></tbody></table></div></div>
     <div id="tab-agents" class="panel hidden"><h2>NGO agents</h2><div class="table-wrap"><table><thead><tr><th>NGO</th><th>Representative</th><th>Phone</th><th>Verification</th><th>Availability</th><th>Location</th></tr></thead><tbody id="agents"></tbody></table></div></div>
@@ -64,6 +69,7 @@ window.PORTAL = { title: 'Host Admin Portal' };
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="/static/portal/map.js"></script>
 <script src="/static/portal/agents.js"></script>
+<script src="/static/portal/trust.js"></script>
 <script src="/static/portal/admin.js"></script>
 <script src="/static/common/portal.js"></script>
 </body></html>

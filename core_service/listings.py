@@ -33,11 +33,19 @@ def _aware(dt: datetime) -> datetime:
 # ---------------------------------------------------------------- expiry
 
 def expire_due(db: Session) -> int:
-    """Mark active listings whose expiry time has passed as expired (lazy expiry on every read/claim)."""
+    """Lazy expiry on every read/claim: open food past its best-before time becomes expired, and so does food an
+    agent accepted but never collected in time (which frees that agent; it counts against their trust score).
+    Collected food that expires stays with the agent until they record it as disposed."""
     now = utcnow()
-    due = list(db.scalars(select(FoodListing).where(FoodListing.status == ListingStatus.ACTIVE,
+    due = list(db.scalars(select(FoodListing).where(FoodListing.status.in_((ListingStatus.ACTIVE, ListingStatus.ASSIGNED)),
                                                     FoodListing.expires_at <= now)))
     for listing in due:
+        if listing.status == ListingStatus.ASSIGNED:
+            a = db.scalar(select(Assignment).where(Assignment.listing_id == listing.id))
+            if a is not None:
+                a.status = "expired"
+                record_event(db, "pickup.expired", actor_id=a.agent_id, subject_id=listing.id,
+                             restaurant_id=listing.restaurant_id)
         listing.status = ListingStatus.EXPIRED
         record_event(db, "listing.expired", subject_id=listing.id, restaurant_id=listing.restaurant_id)
     if due:

@@ -12,6 +12,10 @@ from shared.core_client import CoreClient
 STATIC = Path(__file__).resolve().parent / "static"
 
 
+class NoteIn(BaseModel):
+    note: str = Field(max_length=2000)
+
+
 class ReviewIn(BaseModel):
     decision: str = Field(max_length=20)
     note: str | None = Field(default=None, max_length=2000)
@@ -56,6 +60,15 @@ def create_admin_app(core: CoreClient, jwt_secret: str, **kwargs) -> FastAPI:
     @app.get("/api/listings")
     def listings(status: str | None = None, _: dict = Depends(host)):
         return core.all_listings(status)
+
+    # ---- Phase 7: trust scores (decision support for the host only)
+    @app.get("/api/trust")
+    def trust_overview(_: dict = Depends(host)):
+        return core.trust_overview()
+
+    @app.post("/api/trust/{account_id}/notes", status_code=201)
+    def trust_note(account_id: str, body: NoteIn, me: dict = Depends(host)):
+        return core.add_trust_note(account_id, body.note, me["id"])
 
     # ---- Phase 6: agent system oversight
     @app.get("/api/agent-system")

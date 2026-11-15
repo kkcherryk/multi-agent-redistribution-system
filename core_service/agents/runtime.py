@@ -53,6 +53,8 @@ class MessageBus:
         db.add(msg)
         db.flush()
         target = self.agents.get(recipient)
+        if target is None and recipient.startswith("ngo-agent:"):
+            target = self.agents.get("ngo-agents")  # one runtime agent answers for every NGO's software agent
         return target.handle(db, msg) if target else None
 
 

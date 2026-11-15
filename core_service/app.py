@@ -17,13 +17,14 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from shared.config import DATA_DIR, PORTAL_ROLE, ROLES
 
-from . import accounts, listings, onboarding, tracking
+from . import accounts, listings, onboarding, tracking, trust
 from .listings_api import build_router as build_listings_router
 from .fulfilment_api import build_router as build_fulfilment_router
 from .tracking import build_router as build_tracking_router
 from .agents_api import build_router as build_agents_router
 from .agents.backup import BackupAgent
 from .agents.logistics import LogisticsAgent
+from .agents.ngo_agents import NgoAgents
 from .agents.runtime import AgentRuntime
 from .db import make_engine
 from .models import Account, AccountStatus, Base, Document, Event, FoodListing, NgoProfile
@@ -49,7 +50,7 @@ def create_core_app(db_url: str, service_keys: dict[str, str], upload_dir: Path 
     Base.metadata.create_all(engine)
     SessionLocal = sessionmaker(engine, expire_on_commit=False)
     upload_dir = Path(upload_dir or DATA_DIR / "uploads")
-    runtime = AgentRuntime([LogisticsAgent(match_radius_km), BackupAgent()])
+    runtime = AgentRuntime([LogisticsAgent(match_radius_km), BackupAgent(), NgoAgents(match_radius_km)])
 
     @asynccontextmanager
     async def lifespan(_app):
@@ -58,7 +59,7 @@ def create_core_app(db_url: str, service_keys: dict[str, str], upload_dir: Path 
         yield
         runtime.stop()
 
-    app = FastAPI(title="FRS Core Data Service", version="0.6.0", lifespan=lifespan)
+    app = FastAPI(title="FRS Core Data Service", version="0.7.0", lifespan=lifespan)
     app.state.runtime = runtime
     app.state.engine = engine
     app.state.SessionLocal = SessionLocal
@@ -273,7 +274,9 @@ def create_core_app(db_url: str, service_keys: dict[str, str], upload_dir: Path 
 
     # ------------------------------------------------------------------ Phase 3: food listings & matching
     def on_listing_created(db: Session, listing) -> None:
-        runtime.get("logistics").recommend(db, listing)  # rank collectors straight away, not at the next round
+        # The restaurant's agent announces the food; logistics runs a negotiation round straight away.
+        runtime.bus.send(db, f"restaurant-agent:{listing.restaurant_id}", "logistics", "food_posted",
+                         listing_id=listing.id)
 
     listings_router = build_listings_router(get_db=get_db, caller_portal=caller_portal, require_admin=require_admin,
                                             upload_dir=upload_dir / "listings", radius_km=match_radius_km,
@@ -288,6 +291,9 @@ def create_core_app(db_url: str, service_keys: dict[str, str], upload_dir: Path 
     app.include_router(build_tracking_router(get_db=get_db, caller_portal=caller_portal, require_admin=require_admin))
 
     # ------------------------------------------------------------------ Phase 6: multi-agent layer
+    # ------------------------------------------------------------------ Phase 7: trust assessment
+    app.include_router(trust.build_router(get_db=get_db, require_admin=require_admin))
+
     app.include_router(build_agents_router(get_db=get_db, caller_portal=caller_portal, require_admin=require_admin,
                                            runtime=runtime, pickup_view=listings_router.pickup_view))
     return app
