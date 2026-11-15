@@ -59,7 +59,7 @@ def create_core_app(db_url: str, service_keys: dict[str, str], upload_dir: Path 
         yield
         runtime.stop()
 
-    app = FastAPI(title="FRS Core Data Service", version="0.7.0", lifespan=lifespan)
+    app = FastAPI(title="FRS Core Data Service", version="0.8.0", lifespan=lifespan)
     app.state.runtime = runtime
     app.state.engine = engine
     app.state.SessionLocal = SessionLocal
@@ -291,6 +291,10 @@ def create_core_app(db_url: str, service_keys: dict[str, str], upload_dir: Path 
     app.include_router(build_tracking_router(get_db=get_db, caller_portal=caller_portal, require_admin=require_admin))
 
     # ------------------------------------------------------------------ Phase 6: multi-agent layer
+    # ------------------------------------------------------------------ Phase 8: simulation & evaluation
+    from simulation.evaluate import build_router as build_simulation_router
+    app.include_router(build_simulation_router(require_admin=require_admin))
+
     # ------------------------------------------------------------------ Phase 7: trust assessment
     app.include_router(trust.build_router(get_db=get_db, require_admin=require_admin))
 

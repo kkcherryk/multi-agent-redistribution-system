@@ -78,6 +78,14 @@ The phased roadmap is in [PHASES.md](PHASES.md).
   asks nearby NGO agents for offers, each answers with an offer (travel time, trust) or a refusal, and the best
   offers become "Recommended". People still press Accept. Every round is shown in the host's Agents tab.
 
+## Phase 8: simulator and evaluation
+
+* A pretend city (never your real data) replays thousands of food posts in seconds and compares four ways of
+  choosing a collector: Random, Nearest agent, Our agents, and Our agents without trust.
+* Host portal → "Simulation" tab: change the settings, run, see charts and a table, download a CSV.
+* Command line: `python -m simulation.run` (any setting can be passed, e.g. `--ngos 30 --runs 5`); CSV files
+  are saved in `data/sim_reports/`.
+
 ## Run it
 
 ```bash

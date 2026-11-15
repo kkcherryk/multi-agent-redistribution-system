@@ -184,3 +184,7 @@ class CoreClient:
 
     def add_trust_note(self, account_id: str, note: str, author_id: str) -> dict:
         return self._request("POST", f"/internal/trust/{account_id}/notes", json={"note": note, "author_id": author_id})
+
+    # ---- Phase 8: simulation (can take ~30 s, so a longer timeout)
+    def run_simulation(self, settings: dict) -> dict:
+        return self._request("POST", "/internal/simulation/run", json=settings, timeout=120)

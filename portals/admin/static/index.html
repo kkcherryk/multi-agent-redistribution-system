@@ -25,6 +25,7 @@
       <button type="button" data-tab="listings">Food listings</button>
       <button type="button" data-tab="agents-ai">Agents</button>
       <button type="button" data-tab="trust">Trust</button>
+      <button type="button" data-tab="simulation">Simulation</button>
       <button type="button" data-tab="storage">NGO storage</button>
       <button type="button" data-tab="agents">NGO agent directory</button>
       <button type="button" data-tab="accounts">All accounts</button>
@@ -52,6 +53,18 @@
       <h3>Food at risk</h3>
       <div class="table-wrap"><table><thead><tr><th>Updated</th><th>Restaurant</th><th>Food</th><th>Stage</th><th>Why</th><th>Backup requests</th><th>Food status</th></tr></thead><tbody id="escalations"></tbody></table></div>
       <h3>Agent activity</h3><div id="agent-log"></div></div>
+    <div id="tab-simulation" class="panel hidden"><h2>Simulation and evaluation</h2>
+      <p class="note">Runs a pretend city (not your real data) and compares four ways of choosing a collector. The same seed always gives the same city, food posts and agent behaviour, so every strategy faces exactly the same days.</p>
+      <form id="sim-form" class="grid2" onsubmit="return false"></form>
+      <div class="row" style="margin-top:12px"><button type="button" id="sim-run" class="primary" style="width:auto;margin-top:0">Run simulation</button>
+        <button type="button" id="sim-csv">Download results (CSV)</button></div>
+      <p id="sim-status" class="msg"></p>
+      <div id="sim-results" class="hidden">
+        <div class="sim-charts"><div><canvas id="sim-chart-0"></canvas></div><div><canvas id="sim-chart-1"></canvas></div>
+          <div><canvas id="sim-chart-2"></canvas></div><div><canvas id="sim-chart-3"></canvas></div></div>
+        <div class="table-wrap"><table id="sim-table"></table></div>
+        <p class="note">Bold = best value. "±" = spread across cities. Times and distances are averaged over saved food only, so a strategy that rescues harder (farther) food can show longer times. "Our agents (no trust)" is the same as "Our agents" with the trust penalty switched off, to show what trust adds.</p>
+      </div></div>
     <div id="tab-trust" class="panel hidden"><h2>Trust scores</h2>
       <p class="note">Decision support only: scores never block anyone automatically. Score = (successes + 1) / (total + 2) &times; 100; a new account starts at 50 with low confidence.</p>
       <h3>NGO agents</h3><div id="trust-ngos"></div>
@@ -70,6 +83,8 @@ window.PORTAL = { title: 'Host Admin Portal' };
 <script src="/static/portal/map.js"></script>
 <script src="/static/portal/agents.js"></script>
 <script src="/static/portal/trust.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="/static/portal/simulation.js"></script>
 <script src="/static/portal/admin.js"></script>
 <script src="/static/common/portal.js"></script>
 </body></html>

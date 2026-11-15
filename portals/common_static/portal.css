@@ -77,3 +77,6 @@ main:has(#tab-map:not(.hidden)){max-width:1200px}
 .agent-msg{font-size:.85rem;border-bottom:1px solid var(--line);padding:6px 0}
 .agent-photo{display:block;width:120px;height:120px;object-fit:cover;border-radius:50%;border:3px solid var(--line);margin:0 auto 10px}
 .agent-photo.none{display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:.8rem}
+.sim-charts{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:12px 0}.sim-charts>div{height:220px}
+@media (max-width:700px){.sim-charts{grid-template-columns:1fr}}
+main:has(#tab-simulation:not(.hidden)){max-width:1200px}

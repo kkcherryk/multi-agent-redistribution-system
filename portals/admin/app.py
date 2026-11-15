@@ -61,6 +61,11 @@ def create_admin_app(core: CoreClient, jwt_secret: str, **kwargs) -> FastAPI:
     def listings(status: str | None = None, _: dict = Depends(host)):
         return core.all_listings(status)
 
+    # ---- Phase 8: simulator and evaluation report
+    @app.post("/api/simulation/run")
+    def run_simulation(body: dict, _: dict = Depends(host)):
+        return core.run_simulation(body)
+
     # ---- Phase 7: trust scores (decision support for the host only)
     @app.get("/api/trust")
     def trust_overview(_: dict = Depends(host)):
