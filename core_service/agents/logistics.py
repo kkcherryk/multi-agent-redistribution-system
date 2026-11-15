@@ -14,14 +14,16 @@ from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session
 
 from .. import listings, trust
-from ..models import (Account, AccountStatus, AgentLocation, AgentMessage, AgentRecommendation, Assignment,
+from ..models import (Account, AccountStatus, AgentLocation, AgentMessage, AgentRecommendation, AppSetting, Assignment,
                       BackupRequest, BackupVolunteer, FoodListing, Handover, ListingStatus, NgoProfile, Recipient,
                       utcnow)
 from .routing import directions_url, plan_route, road_km, travel_minutes
+from .dispatch_features import cost as dispatch_cost, feature_vector
 from .ngo_agents import address as ngo_address
 from .runtime import Agent
 
 TOP_N = 3
+LEARNED_DISPATCH_KEY = "learned_dispatch"
 FRESH_LOCATION = timedelta(minutes=10)   # older live positions are ignored in favour of the NGO base
 FAIRNESS_MIN_PER_RECENT_JOB = 2.0        # minutes added per pickup the agent completed in the last 24 h
 REFRESH_AFTER = timedelta(minutes=5)
@@ -45,9 +47,10 @@ class LogisticsAgent(Agent):
     name = "logistics"
     description = "Ranks the best collectors for new food and plans pickup routes."
 
-    def __init__(self, radius_km: float) -> None:
+    def __init__(self, radius_km: float, policy_path=None) -> None:
         super().__init__()
         self.radius_km = radius_km
+        self.policy_path = policy_path  # None = the default data/learned_policy.json
 
     # ---------------------------------------------------------------- collector ranking
     def nearby_ngos(self, db: Session, listing: FoodListing) -> list[str]:
@@ -67,6 +70,8 @@ class LogisticsAgent(Agent):
         + fairness penalty (2 min per pickup in the last 24 h). With ``announce`` every message is logged.
         """
         ngo_agents = self.bus.agents["ngo-agents"]
+        learned = self.learned_weights(db)  # Phase 9: host-switched learned dispatch, else None
+        minutes_left = (listing.expires_at - utcnow()).total_seconds() / 60
         proposals, refusals = [], []
         for agent_id in self.nearby_ngos(db, listing):
             if announce:
@@ -79,7 +84,12 @@ class LogisticsAgent(Agent):
             trust_pen = trust.bid_trust_penalty(reply["trust"])
             fair_pen = FAIRNESS_MIN_PER_RECENT_JOB * reply["recent_jobs"]
             total = reply["eta_minutes"] + trust_pen + fair_pen
-            reason = (f"~{reply['eta_minutes']:.0f} min from {reply['origin']} ({reply['km']:.1f} km by road); "
+            if learned is not None:
+                total = dispatch_cost(learned, feature_vector(
+                    eta_minutes=reply["eta_minutes"], trust=reply["trust"], confidence=reply["trust_confidence"],
+                    jobs_today=reply["recent_jobs"], minutes_left=minutes_left, quantity=listing.quantity))
+            reason = (("learned dispatch; " if learned is not None else "")
+                      + f"~{reply['eta_minutes']:.0f} min from {reply['origin']} ({reply['km']:.1f} km by road); "
                       f"trust {reply['trust']:.0f} ({reply['trust_confidence']} confidence)"
                       + (f"; {reply['recent_jobs']} pickup(s) in the last 24 h" if reply["recent_jobs"] else ""))
             proposals.append({"agent_id": agent_id, "name": reply["name"], "km": reply["km"],
@@ -88,6 +98,16 @@ class LogisticsAgent(Agent):
         proposals.sort(key=lambda r: (r["score"], r["km"]))
         self._last_refusals = refusals
         return proposals
+
+    def learned_weights(self, db: Session) -> list[float] | None:
+        """Learned weights if the host switched learned dispatch on AND a valid trained policy exists;
+        otherwise None, so ranking falls back to the hand-set Phase 7 bid."""
+        setting = db.get(AppSetting, LEARNED_DISPATCH_KEY)
+        if setting is None or setting.value != "on":
+            return None
+        from simulation.learning import load_policy  # local: the simulator package imports this module
+        policy = load_policy(self.policy_path)
+        return policy["weights"] if policy else None
 
     def recommend(self, db: Session, listing: FoodListing, *, announce: bool = False) -> list[AgentRecommendation]:
         bids = self.rank_collectors(db, listing, announce=announce)

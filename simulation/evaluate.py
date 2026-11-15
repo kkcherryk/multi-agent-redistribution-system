@@ -103,8 +103,9 @@ def to_csv(result: dict) -> str:
 MAX_TOTAL_POSTS = 6000  # runs x days x posts per day; keeps one request to roughly half a minute
 
 
-def build_router(*, require_admin):
-    """Host-only API: POST /internal/simulation/run with any ScenarioConfig fields."""
+def build_router(*, require_admin, policy_path=None):
+    """Host-only API: POST /internal/simulation/run with any ScenarioConfig fields. If a learned dispatcher has
+    been trained (Phase 9), it is compared as a fifth strategy."""
     from fastapi import APIRouter, Depends, HTTPException
 
     r = APIRouter(prefix="/internal/simulation")
@@ -123,6 +124,9 @@ def build_router(*, require_admin):
         if cfg.runs * cfg.days * cfg.posts_per_day > MAX_TOTAL_POSTS:
             raise HTTPException(status_code=422, detail=f"too large: runs x days x posts per day must be at most "
                                                         f"{MAX_TOTAL_POSTS}")
-        return compare(cfg)
+        from .learning import LearnedStrategy, load_policy
+        policy = load_policy(policy_path)
+        strategies = list(BUILT_IN.values()) + ([LearnedStrategy(policy["weights"])] if policy else [])
+        return compare(cfg, strategies)
 
     return r

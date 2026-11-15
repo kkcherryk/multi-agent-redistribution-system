@@ -43,14 +43,14 @@ def account_out(account: Account, ngo_profile: NgoProfile | None = None) -> dict
 
 def create_core_app(db_url: str, service_keys: dict[str, str], upload_dir: Path | None = None,
                     match_radius_km: float = listings.DEFAULT_RADIUS_KM,
-                    agents_interval_seconds: float | None = None) -> FastAPI:
+                    agents_interval_seconds: float | None = None, policy_path: Path | None = None) -> FastAPI:
     """``agents_interval_seconds``: run the backend agents in a background thread at this interval (None = only
     when asked through /internal/agent-system/run, which is what the tests use)."""
     engine = make_engine(db_url)
     Base.metadata.create_all(engine)
     SessionLocal = sessionmaker(engine, expire_on_commit=False)
     upload_dir = Path(upload_dir or DATA_DIR / "uploads")
-    runtime = AgentRuntime([LogisticsAgent(match_radius_km), BackupAgent(), NgoAgents(match_radius_km)])
+    runtime = AgentRuntime([LogisticsAgent(match_radius_km, policy_path), BackupAgent(), NgoAgents(match_radius_km)])
 
     @asynccontextmanager
     async def lifespan(_app):
@@ -59,7 +59,7 @@ def create_core_app(db_url: str, service_keys: dict[str, str], upload_dir: Path 
         yield
         runtime.stop()
 
-    app = FastAPI(title="FRS Core Data Service", version="0.8.0", lifespan=lifespan)
+    app = FastAPI(title="FRS Core Data Service", version="0.9.0", lifespan=lifespan)
     app.state.runtime = runtime
     app.state.engine = engine
     app.state.SessionLocal = SessionLocal
@@ -293,7 +293,11 @@ def create_core_app(db_url: str, service_keys: dict[str, str], upload_dir: Path 
     # ------------------------------------------------------------------ Phase 6: multi-agent layer
     # ------------------------------------------------------------------ Phase 8: simulation & evaluation
     from simulation.evaluate import build_router as build_simulation_router
-    app.include_router(build_simulation_router(require_admin=require_admin))
+    app.include_router(build_simulation_router(require_admin=require_admin, policy_path=policy_path))
+
+    # ------------------------------------------------------------------ Phase 9: learned dispatch
+    from .learned_api import build_router as build_learned_router
+    app.include_router(build_learned_router(get_db=get_db, require_admin=require_admin, policy_path=policy_path))
 
     # ------------------------------------------------------------------ Phase 7: trust assessment
     app.include_router(trust.build_router(get_db=get_db, require_admin=require_admin))

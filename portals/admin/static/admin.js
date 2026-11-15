@@ -206,6 +206,7 @@
     if (name === "simulation" && window.FRSSimulation) window.FRSSimulation.show(ui);
     if (name === "trust" && window.FRSTrust) window.FRSTrust.show(ui);
     if (name === "agents-ai" && window.FRSAgents) window.FRSAgents.show(ui);
+    if (name === "agents-ai" && window.FRSLearned) window.FRSLearned.show(ui);
     if (window.FRSMap) { if (name === "map") window.FRSMap.show(ui); else window.FRSMap.hide(); }
   }
 

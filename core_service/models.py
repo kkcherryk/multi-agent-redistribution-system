@@ -430,3 +430,16 @@ class TrustNote(Base):
     author_id: Mapped[str | None] = mapped_column(String(32), nullable=True)
     note: Mapped[str] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
+
+
+# ---------------------------------------------------------------- Phase 9: host-controlled settings
+
+class AppSetting(Base):
+    """Small key/value settings the host controls (e.g. learned dispatch on/off)."""
+
+    __tablename__ = "app_settings"
+
+    key: Mapped[str] = mapped_column(String(60), primary_key=True)
+    value: Mapped[str] = mapped_column(String(200))
+    updated_by: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    updated_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow, onupdate=utcnow)

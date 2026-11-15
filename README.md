@@ -86,6 +86,14 @@ The phased roadmap is in [PHASES.md](PHASES.md).
 * Command line: `python -m simulation.run` (any setting can be passed, e.g. `--ngos 30 --runs 5`); CSV files
   are saved in `data/sim_reports/`.
 
+## Phase 9: learned dispatch (reinforcement learning)
+
+* A learning dispatcher practises in the simulator (policy gradient) and learns how much travel time, trust,
+  fairness and urgency should count when choosing who is offered food first.
+* Host portal → Agents tab → "Learned dispatch": train it (about 20 seconds), read its test result on unseen
+  cities, and switch it on or off. It is off by default and falls back to the normal rule if not trained.
+* Command line: `python -m simulation.train` (saves `data/learned_policy.json`).
+
 ## Run it
 
 ```bash

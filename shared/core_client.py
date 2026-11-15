@@ -188,3 +188,13 @@ class CoreClient:
     # ---- Phase 8: simulation (can take ~30 s, so a longer timeout)
     def run_simulation(self, settings: dict) -> dict:
         return self._request("POST", "/internal/simulation/run", json=settings, timeout=120)
+
+    # ---- Phase 9: learned dispatch (training takes ~15-30 s)
+    def learned_dispatch(self) -> dict:
+        return self._request("GET", "/internal/learned-dispatch")
+
+    def train_dispatch(self, episodes: int) -> dict:
+        return self._request("POST", "/internal/learned-dispatch/train", json={"episodes": episodes}, timeout=300)
+
+    def switch_dispatch(self, enabled: bool, host_id: str) -> dict:
+        return self._request("PUT", "/internal/learned-dispatch", json={"enabled": enabled, "host_id": host_id})

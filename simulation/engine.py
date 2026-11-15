@@ -67,6 +67,8 @@ class Simulation:
         self.km = 0.0
         self._queue: list = []
         self._seq = 0
+        # Phase 9: what happened after each offer, keyed by (post id, attempt) - used as learning feedback.
+        self.offers: dict[tuple[str, int], dict] = {}
 
     # ---------------------------------------------------------------- event queue
     def schedule(self, t: float, kind: str, *data) -> None:
@@ -120,6 +122,8 @@ class Simulation:
             return
         agent = ordered[0]
         ps.status, ps.attempts = "offered", ps.attempts + 1
+        self.offers[(ps.post.id, ps.attempts)] = {"agent": agent.ngo.id, "outcome": "pending", "km": 0.0,
+                                                  "quantity": ps.post.quantity}
         agent.busy_until = float("inf")  # reserved while deciding, so it is not offered two things at once
         rng = self.draw(ps.post.id, agent.ngo.id, ps.attempts)
         accepts = rng.random() < self.cfg.accept_prob
@@ -127,7 +131,9 @@ class Simulation:
 
     def on_response(self, ps: PostState, agent: AgentState, accepts: bool) -> None:
         agent.busy_until = self.now
+        offer = self.offers[(ps.post.id, ps.attempts)]
         if not accepts or self.now >= ps.post.expires_at:
+            offer["outcome"] = "declined"
             ps.declined.add(agent.ngo.id)
             ps.status = "open"
             self.on_dispatch(ps)
@@ -137,6 +143,7 @@ class Simulation:
         if rng.random() < agent.ngo.giveback_prob:
             self.schedule(self.now + rng.uniform(*GIVEBACK_AFTER), "giveback", ps.post.id, agent.ngo.id)
             agent.busy_until = float("inf")
+            offer["outcome"] = "giveback"
             return
         # "Rescued" = this agent could not have taken the food under the normal rules (off duty or beyond 5 km).
         normally_eligible = (agent.ngo.available(self.now) and
@@ -146,12 +153,14 @@ class Simulation:
         arrive = self.now + travel_minutes(to_restaurant)
         self.km += to_restaurant
         if arrive > ps.post.expires_at:          # too late: the food expired on the way
+            offer["outcome"], offer["km"] = "late", to_restaurant
             ps.status = "wasted"
             agent.failures += 1
             agent.busy_until = arrive
             return
         back = road_km(ps.post.restaurant.pos, agent.ngo.base)
         self.km += back
+        offer["outcome"], offer["km"] = "saved", to_restaurant + back
         ps.status, ps.picked_up_at = "saved", arrive
         agent.successes += 1
         agent.pickups += 1

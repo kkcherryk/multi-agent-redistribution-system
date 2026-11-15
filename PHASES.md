@@ -17,8 +17,8 @@ Each phase must be reviewed and explicitly approved before the next one starts.
 | 5 ✅ | Host dashboard & live map | M10 | Map of restaurants, agents, open tickets and movement; agent detail panel; last-known vs live location; operational overview |
 | 6 ✅ | Multi-agent layer: logistics & backup collection | M11 | Agent runtime + message bus, route-optimisation agent (nearest-collector + route heuristics), backup/storage agent with trigger rules (no acceptance / all agents busy) |
 | 7 ✅ | Trust assessment & negotiation protocol *(proposed design)* | M12, M7 (advanced) | Explainable trust/reputation scores with confidence and reasons (decision support only), Contract-Net-style negotiation between listing and NGO agents, host review flags |
-| **8** | Simulation & evaluation harness *(proposed design)* | cross-cutting | Synthetic city/scenario generator, metrics (food rescued %, waste, pickup latency, distance, fairness, trust calibration), baseline comparisons, reports |
-| 9 | Reinforcement-learning dispatch policy *(proposed design)* | M7, M11 | RL / bandit policy trained in the simulator, compared against heuristic baselines, deployed behind a host-controlled switch |
+| 8 ✅ | Simulation & evaluation harness *(proposed design)* | cross-cutting | Synthetic city/scenario generator, metrics (food rescued %, waste, pickup latency, distance, fairness, trust calibration), baseline comparisons, reports |
+| **9** | Reinforcement-learning dispatch policy *(proposed design)* | M7, M11 | RL / bandit policy trained in the simulator, compared against heuristic baselines, deployed behind a host-controlled switch |
 | 10 | Hardening & integration | all | Notifications, privacy/retention rules, security review, deployment scripts, end-to-end demo |
 
 Phases can be re-ordered, split or extended as requirements change.
@@ -61,3 +61,7 @@ Phases can be re-ordered, split or extended as requirements change.
 | 8 | Default "busy city": 40 restaurants, 15 NGOs, 80 posts/day, 45% on duty, 25% unreliable NGOs, 20% backup collectors; 3 cities × 5 days. Each run is capped at 6,000 posts. |
 | 8 | Strategies compared: Random, Nearest agent, Our agents, Our agents without trust (to show what trust adds). Metrics: food saved %, portions saved/wasted, time to accept/pickup, km per 100 portions, Gini of work spread, give-backs and rate, rescued by escalation. |
 | 8 | First finding (default city): our agents save ~94% of food vs ~76% for random/nearest, mainly thanks to escalation (wider alerts + backup), at the cost of more travel. The trust penalty makes no measurable difference here, a target for Phase 9. |
+| 9 | Learned dispatch = linear policy cost = weights · features, trained by REINFORCE (policy gradient) in the simulator, starting from the hand-set Phase 7 weights. Features are shared by the app and the simulator: travel, trust gap, low confidence, pickups today, travel-when-urgent, trust-gap × food size, off-duty backup. |
+| 9 | Reward per offer: saved = portions/10 − 0.2 × km; given back = −3; arrived too late = −portions/10; declined = no signal. 300 practice cities (seeds from 10,000), tested on unseen cities (seeds 1–3) with the Phase 8 report. |
+| 9 | Recommended only if, on unseen cities, food saved is within 0.2 points (or better) and the give-back rate is not worse. First result: same food saved (94.3%), give-back rate 15.2% → 14.2%, ~1% more travel; it learned to weigh trust about 2× more, especially for large food posts, and fairness less. |
+| 9 | Off by default; the host switches it on/off in the Agents tab. If the policy file is missing or invalid, ranking falls back to the hand-set rule. People still accept; the backup agent still applies. |

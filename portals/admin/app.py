@@ -61,6 +61,19 @@ def create_admin_app(core: CoreClient, jwt_secret: str, **kwargs) -> FastAPI:
     def listings(status: str | None = None, _: dict = Depends(host)):
         return core.all_listings(status)
 
+    # ---- Phase 9: learned dispatch (host controls it)
+    @app.get("/api/learned-dispatch")
+    def learned_dispatch(_: dict = Depends(host)):
+        return core.learned_dispatch()
+
+    @app.post("/api/learned-dispatch/train")
+    def train_dispatch(body: dict, _: dict = Depends(host)):
+        return core.train_dispatch(int(body.get("episodes", 300)))
+
+    @app.put("/api/learned-dispatch")
+    def switch_dispatch(body: dict, me: dict = Depends(host)):
+        return core.switch_dispatch(bool(body.get("enabled")), me["id"])
+
     # ---- Phase 8: simulator and evaluation report
     @app.post("/api/simulation/run")
     def run_simulation(body: dict, _: dict = Depends(host)):
