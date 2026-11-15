@@ -1,4 +1,4 @@
-# Prototype Development Roadmap
+﻿# Prototype Development Roadmap
 
 Source: *Multi-Agent Food Redistribution System – Project modules and workflow specification* (13 modules).
 Each phase must be reviewed and explicitly approved before the next one starts.
@@ -19,7 +19,7 @@ Each phase must be reviewed and explicitly approved before the next one starts.
 | 7 ✅ | Trust assessment & negotiation protocol *(proposed design)* | M12, M7 (advanced) | Explainable trust/reputation scores with confidence and reasons (decision support only), Contract-Net-style negotiation between listing and NGO agents, host review flags |
 | 8 ✅ | Simulation & evaluation harness *(proposed design)* | cross-cutting | Synthetic city/scenario generator, metrics (food rescued %, waste, pickup latency, distance, fairness, trust calibration), baseline comparisons, reports |
 | 9 ✅ | Reinforcement-learning dispatch policy *(proposed design)* | M7, M11 | RL / bandit policy trained in the simulator, compared against heuristic baselines, deployed behind a host-controlled switch |
-| **10** | Hardening & integration | all | Notifications, privacy/retention rules, security review, deployment scripts, end-to-end demo |
+| 10 ✅ | Hardening & integration | all | Notifications, privacy/retention rules, security review, deployment scripts, end-to-end demo |
 
 Phases can be re-ordered, split or extended as requirements change.
 
