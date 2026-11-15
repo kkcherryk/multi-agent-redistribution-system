@@ -57,13 +57,7 @@
         ob.missing.forEach((m) => ul.append(ui.el("li", {}, m)));
         st.append(ul);
       }
-      const submit = ui.el("button", { class: "primary", type: "button" }, ob.status === "on_hold" ? "Resubmit for review" : "Submit for review");
-      submit.disabled = ob.missing.length > 0;
-      const msg = ui.el("div", { class: "msg" });
-      submit.addEventListener("click", async () => {
-        try { await ui.api("/submit", { method: "POST" }); await refresh(); } catch (e) { fail(msg, e); }
-      });
-      st.append(submit, msg);
+      st.append(ui.el("p", { class: "note" }, "Fill in your details and upload the documents below, then submit at the bottom of the page."));
     }
 
     // ---- availability (NGO agents only, Module 3/5)
@@ -166,6 +160,21 @@
         box.append(row, m);
       }
       ds.append(box);
+    }
+
+    // ---- submit: last, after the details and documents are filled in
+    if (editable) {
+      const sb = section(ob.status === "on_hold" ? "Resubmit your application" : "Submit your application");
+      sb.append(ui.el("p", { class: "note" }, ob.missing.length
+        ? "Complete everything listed under Verification to enable this button."
+        : "Everything is ready. Send your application to the host for review."));
+      const submit = ui.el("button", { class: "primary", type: "button" }, ob.status === "on_hold" ? "Resubmit for review" : "Submit for review");
+      submit.disabled = ob.missing.length > 0;
+      const msg = ui.el("div", { class: "msg" });
+      submit.addEventListener("click", async () => {
+        try { await ui.api("/submit", { method: "POST" }); await refresh(); } catch (e) { fail(msg, e); }
+      });
+      sb.append(submit, msg);
     }
   }
 
