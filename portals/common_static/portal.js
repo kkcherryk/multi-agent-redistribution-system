@@ -158,7 +158,7 @@
 
   async function init() {
     document.title = cfg.title;
-    api("/portal").then((info) => { $("home").href = info.landing_url; }).catch(() => {});
+    api("/portal").then((info) => { if ($("home")) $("home").href = info.landing_url; }).catch(() => {});
     document.querySelectorAll(".tabs button").forEach((b) => b.addEventListener("click", () => setMode(b.dataset.mode)));
 
     $("login-form").addEventListener("submit", async (e) => {
