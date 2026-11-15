@@ -84,7 +84,10 @@ section{position:relative}
 .story-row.flip .story-img{order:2}
 .story-img{margin:0;border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow);aspect-ratio:4/3}
 .story-img img{width:100%;height:115%;object-fit:cover;will-change:transform}
-.num{font:800 3.4rem var(--head);color:transparent;-webkit-text-stroke:1.5px #b6cfe6;line-height:1}
+.num{display:inline-flex;align-items:center;gap:10px;margin-bottom:8px;padding:6px 16px 6px 6px;border-radius:999px;font:700 .8rem var(--head);letter-spacing:.1em;text-transform:uppercase;color:var(--c);background:color-mix(in srgb,var(--c) 12%,#fff)}
+.num i{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--c);font-style:normal;font-size:1.05rem;box-shadow:0 6px 14px -6px var(--c);transition:transform .5s var(--ease)}
+.story-row:hover .num i{transform:rotate(-12deg) scale(1.1)}
+.n1{--c:#e08a00}.n2{--c:#0b93b8}.n3{--c:#e2574c}.n4{--c:#3a9a37}
 .story-text h3{font-size:1.65rem;font-weight:600;margin:6px 0 12px;color:var(--blue-ink)}
 .story-text p{color:var(--muted);font-size:1.05rem;margin:0}
 
