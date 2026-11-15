@@ -125,22 +125,85 @@ The phased roadmap is in [PHASES.md](PHASES.md).
 
 ## Run it (VS Code terminal)
 
+Open the project folder in VS Code, then open a terminal with **Terminal → New Terminal** (or press Ctrl + `).
+Run these in order.
+
+**1. Go to the project folder** (skip this if VS Code already opened it):
+
 ```bash
-python -m scripts.setup --host-email you@org.example --host-name "Your Name"
+cd "path/to/multi-agent-redistribution-system"
+```
+
+**2. Install the packages** (first time only):
+
+```bash
+pip install -r requirements.txt
+```
+
+**3. Create the host account** (first time only; you choose the password when asked):
+
+```bash
+python -m scripts.setup --host-email you@example.org --host-name "Your Name"
+```
+
+**4. Start the app:**
+
+```bash
 python -m scripts.run_all
 ```
 
-Open http://127.0.0.1:8004 and choose a portal. Press Ctrl+C in the terminal to stop.
+Leave this terminal open, then open **http://127.0.0.1:8004** in your browser.
 
-Other commands, each run in a second terminal while the app is running:
+| Portal | Address |
+|---|---|
+| Choose a portal | http://127.0.0.1:8004 |
+| Host | http://127.0.0.1:8001 |
+| Restaurant | http://127.0.0.1:8002 |
+| NGO | http://127.0.0.1:8003 |
+
+**5. To stop the app:** click in that terminal and press **Ctrl + C**.
+
+### Optional commands
+
+Run these in a **second terminal** (click the **+** in the terminal panel) while the app is running.
+
+Check that everything is up:
 
 ```bash
 python -m scripts.health
-python -m scripts.demo --host-email you@org.example
+```
+
+Run the full demo story (it asks for the host password):
+
+```bash
+python -m scripts.demo --host-email you@example.org
+```
+
+Run all the tests. This takes about 5 minutes, and the app doesn't need to be running:
+
+```bash
 python -m pytest -q
 ```
 
-* `python -m scripts.seed_dev` creates dev host, restaurant and NGO accounts; their credentials go in `data/dev_credentials.json`.
+Train the learned dispatcher from the command line (you can also do this in Host portal → Agents tab):
+
+```bash
+python -m simulation.train
+```
+
+Run the simulator report from the command line (you can also do this in Host portal → Simulation tab):
+
+```bash
+python -m simulation.run
+```
+
+**If you see "port already in use" when starting:** the app is already running in another terminal. Stop that one
+with Ctrl + C first, or just open http://127.0.0.1:8004.
+
+### Good to know
+
+* `python -m scripts.seed_dev` creates dev host, restaurant and NGO accounts. Their credentials go in
+  `data/dev_credentials.json`.
 * Settings can be put in a `.env` file: copy `.env.example`.
 * Generated secrets live in `data/.secrets.json` and the database is `data/core.db`. The whole `data/` folder and
   `.env` are git-ignored.
