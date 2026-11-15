@@ -135,6 +135,9 @@ def notify_nearby(db: Session, listing: FoodListing, radius_km: float) -> int:
         if agent.id in already:
             continue
         db.add(ListingNotification(listing_id=listing.id, agent_id=agent.id, distance_km=round(dist, 3)))
+        from .notifications import notify
+        notify(db, agent.id, "food_nearby", f"New food nearby: {listing.food_type}",
+               f"{listing.quantity:g} {listing.unit}, {dist:.1f} km away. Open your feed to accept.", listing.id)
         sent += 1
     record_event(db, "listing.notified", subject_id=listing.id, agents=sent, radius_km=radius_km)
     db.flush()
@@ -247,7 +250,9 @@ def listing_view(db: Session, listing: FoodListing, *, audience: str) -> dict:
                               "distance_km": assignment.distance_km, "agent_id": assignment.agent_id,
                               "ngo_name": agent.display_name if agent else None,
                               "representative_name": ngo.representative_name if ngo else None,
-                              "phone": agent.phone if agent else None}
+                              # Privacy rule: phone numbers only while the pickup is in progress (host: always).
+                              "phone": (agent.phone if agent and (audience == "admin" or listing.status in
+                                                                  ListingStatus.IN_PROGRESS) else None)}
     from .fulfilment import fulfilment_view  # local import: fulfilment depends on this module
     view.update(fulfilment_view(db, listing.id))
     if audience == "admin":

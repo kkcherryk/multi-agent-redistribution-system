@@ -18,8 +18,8 @@ Each phase must be reviewed and explicitly approved before the next one starts.
 | 6 ✅ | Multi-agent layer: logistics & backup collection | M11 | Agent runtime + message bus, route-optimisation agent (nearest-collector + route heuristics), backup/storage agent with trigger rules (no acceptance / all agents busy) |
 | 7 ✅ | Trust assessment & negotiation protocol *(proposed design)* | M12, M7 (advanced) | Explainable trust/reputation scores with confidence and reasons (decision support only), Contract-Net-style negotiation between listing and NGO agents, host review flags |
 | 8 ✅ | Simulation & evaluation harness *(proposed design)* | cross-cutting | Synthetic city/scenario generator, metrics (food rescued %, waste, pickup latency, distance, fairness, trust calibration), baseline comparisons, reports |
-| **9** | Reinforcement-learning dispatch policy *(proposed design)* | M7, M11 | RL / bandit policy trained in the simulator, compared against heuristic baselines, deployed behind a host-controlled switch |
-| 10 | Hardening & integration | all | Notifications, privacy/retention rules, security review, deployment scripts, end-to-end demo |
+| 9 ✅ | Reinforcement-learning dispatch policy *(proposed design)* | M7, M11 | RL / bandit policy trained in the simulator, compared against heuristic baselines, deployed behind a host-controlled switch |
+| **10** | Hardening & integration | all | Notifications, privacy/retention rules, security review, deployment scripts, end-to-end demo |
 
 Phases can be re-ordered, split or extended as requirements change.
 
@@ -65,3 +65,8 @@ Phases can be re-ordered, split or extended as requirements change.
 | 9 | Reward per offer: saved = portions/10 − 0.2 × km; given back = −3; arrived too late = −portions/10; declined = no signal. 300 practice cities (seeds from 10,000), tested on unseen cities (seeds 1–3) with the Phase 8 report. |
 | 9 | Recommended only if, on unseen cities, food saved is within 0.2 points (or better) and the give-back rate is not worse. First result: same food saved (94.3%), give-back rate 15.2% → 14.2%, ~1% more travel; it learned to weigh trust about 2× more, especially for large food posts, and fairness less. |
 | 9 | Off by default; the host switches it on/off in the Agents tab. If the policy file is missing or invalid, ranking falls back to the hand-set rule. People still accept; the backup agent still applies. |
+| 10 | Notifications are in-app (bell + inbox in each portal, refreshed every 30 s), created from the event log, so every part of the system can notify without extra wiring. No email or SMS yet (that needs a provider account). |
+| 10 | Privacy: restaurant and NGO see each other's phone only while the pickup is in progress; the host always does. Retention: movement trails 7 days, stale positions 1 day, notifications 30 days (read) or 90 (unread), agent messages and sign-in records 90 days; food records and the audit log are kept. The housekeeping agent applies the rules hourly. |
+| 10 | Data requests: the host can export an account (JSON) or erase it. Erasure removes personal details, documents, locations and notifications, keeps food records anonymised, signs the account out, and is refused while it has open food, pickups or stock. Host accounts cannot be erased this way. |
+| 10 | Security limits: 5 failed sign-ins per email + network in 15 min (30 per network), 10 registrations per network per hour; security headers; cross-site POST/PUT/DELETE refused; `no-store` on all API answers. Full review in SECURITY.md. |
+| 10 | Deployment stays simple: one `scripts/setup.py`, `.env` support, `scripts/health.py`, and `scripts/demo.py` (the end-to-end story, also an automated test). |

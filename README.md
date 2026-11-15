@@ -94,17 +94,53 @@ The phased roadmap is in [PHASES.md](PHASES.md).
   cities, and switch it on or off. It is off by default and falls back to the normal rule if not trained.
 * Command line: `python -m simulation.train` (saves `data/learned_policy.json`).
 
-## Run it
+## Phase 10: hardening and integration
+
+* **Notifications:** a bell in every portal's header shows a red unread count. People are told about:
+  * new nearby food (NGO);
+  * pickup accepted, on the way, collected or rejected, given back, delivered, stored or expired (restaurant);
+  * account approved, held or declined (applicant);
+  * new applications and food needing attention (host);
+  * backup requests (backup collector).
+* **Privacy:** phone numbers are shared only while a pickup is in progress. Old data is deleted automatically:
+  * movement trails after 7 days;
+  * stale positions after 1 day;
+  * notifications after 30 days if read, 90 if unread;
+  * agent messages and sign-in records after 90 days.
+
+  Host portal → **Privacy** tab: read the rules, run the clean-up, and export or erase one account's data.
+* **Security:**
+  * limits on repeated sign-ins and registrations;
+  * security headers;
+  * cross-site requests refused;
+  * no caching of personal data.
+
+  See [SECURITY.md](SECURITY.md) for the full review.
+* **Deployment:**
+  * `scripts/setup.py` handles one-time setup;
+  * `.env.example` lists all settings;
+  * `python -m scripts.health` checks all five services.
+* **End-to-end demo:** `python -m scripts.demo --host-email <host email>` runs the whole story (13 checked steps)
+  against the running app. The same story is the automated test `tests/test_end_to_end.py`.
+
+## Run it (VS Code terminal)
 
 ```bash
-pip install -r requirements.txt
-python -m scripts.seed_dev      # optional: dev host/restaurant/NGO accounts, credentials in data/dev_credentials.json
-python -m scripts.run_all       # starts all 5 services; open http://127.0.0.1:8004
-python -m pytest -q             # test suite
+python -m scripts.setup --host-email you@org.example --host-name "Your Name"
+python -m scripts.run_all
 ```
 
-Create a real host account: `python -m scripts.create_host --email you@org.example --name "Your Name"`.
+Open http://127.0.0.1:8004 and choose a portal. Press Ctrl+C in the terminal to stop.
 
-Ports, URLs and secrets can be overridden with `FRS_*` environment variables (see `shared/config.py`).
-Generated secrets live in `data/.secrets.json`, and the database is `data/core.db`. The whole `data/` folder is
-git-ignored.
+Other commands, each run in a second terminal while the app is running:
+
+```bash
+python -m scripts.health
+python -m scripts.demo --host-email you@org.example
+python -m pytest -q
+```
+
+* `python -m scripts.seed_dev` creates dev host, restaurant and NGO accounts; their credentials go in `data/dev_credentials.json`.
+* Settings can be put in a `.env` file: copy `.env.example`.
+* Generated secrets live in `data/.secrets.json` and the database is `data/core.db`. The whole `data/` folder and
+  `.env` are git-ignored.

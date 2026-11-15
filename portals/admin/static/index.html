@@ -30,6 +30,7 @@
       <button type="button" data-tab="agents">NGO agent directory</button>
       <button type="button" data-tab="accounts">All accounts</button>
       <button type="button" data-tab="events">Activity</button>
+      <button type="button" data-tab="privacy">Privacy</button>
     </div>
     <div id="tab-map" class="panel hidden"><h2>Live operations map</h2>
       <div id="map-summary" class="row" style="margin-bottom:10px"></div>
@@ -74,6 +75,7 @@
     <div id="tab-storage" class="panel hidden"><h2>Food stored at NGOs</h2><div class="table-wrap"><table><thead><tr><th>NGO</th><th>Food</th><th>Left / stored</th><th>Location</th><th>Best before</th><th>Status</th></tr></thead><tbody id="storage"></tbody></table></div></div>
     <div id="tab-agents" class="panel hidden"><h2>NGO agents</h2><div class="table-wrap"><table><thead><tr><th>NGO</th><th>Representative</th><th>Phone</th><th>Verification</th><th>Availability</th><th>Location</th></tr></thead><tbody id="agents"></tbody></table></div></div>
     <div id="tab-accounts" class="panel hidden"><h2>Accounts</h2><div class="table-wrap"><table><thead><tr><th>Name</th><th>Role</th><th>Email</th><th>Application</th><th>Status marks</th><th>Created</th></tr></thead><tbody id="accounts"></tbody></table></div></div>
+    <div id="tab-privacy" class="panel hidden"><h2>Privacy and data retention</h2><div id="privacy-box"></div></div>
     <div id="tab-events" class="panel hidden"><h2>Recent activity</h2><div class="table-wrap"><table><thead><tr><th>Time</th><th>Event</th><th>Portal</th><th>Subject</th></tr></thead><tbody id="events"></tbody></table></div></div>
   </section>
 </main>
@@ -87,6 +89,7 @@ window.PORTAL = { title: 'Host Admin Portal' };
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script src="/static/portal/simulation.js"></script>
 <script src="/static/portal/learned.js"></script>
+<script src="/static/portal/privacy.js"></script>
 <script src="/static/portal/admin.js"></script>
 <script src="/static/common/portal.js"></script>
 </body></html>

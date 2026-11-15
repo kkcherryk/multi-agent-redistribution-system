@@ -80,3 +80,13 @@ main:has(#tab-map:not(.hidden)){max-width:1200px}
 .sim-charts{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:12px 0}.sim-charts>div{height:220px}
 @media (max-width:700px){.sim-charts{grid-template-columns:1fr}}
 main:has(#tab-simulation:not(.hidden)){max-width:1200px}
+/* Phase 10: notification bell */
+header>div{display:flex;align-items:center;gap:10px}
+.bell-wrap{position:relative}
+#bell{position:relative;padding:6px 12px}
+#bell .count{position:absolute;top:-6px;right:-6px;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:#cf222e;color:#fff;font-size:.75rem;font-weight:700;line-height:20px;text-align:center}
+#inbox{position:absolute;right:0;top:calc(100% + 8px);width:min(360px,calc(100vw - 32px));max-height:420px;overflow-y:auto;background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.18);z-index:1000;padding:8px}
+#inbox .inbox-head{display:flex;justify-content:space-between;align-items:center;padding:4px 6px 8px;border-bottom:1px solid var(--line)}
+.notice{padding:8px 6px;border-bottom:1px solid var(--line);font-size:.88rem}
+.notice.unread{border-left:3px solid var(--accent);padding-left:8px}
+.notice strong{display:block}.notice .when{color:var(--muted);font-size:.78rem}

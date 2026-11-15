@@ -443,3 +443,20 @@ class AppSetting(Base):
     value: Mapped[str] = mapped_column(String(200))
     updated_by: Mapped[str | None] = mapped_column(String(32), nullable=True)
     updated_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow, onupdate=utcnow)
+
+
+# ---------------------------------------------------------------- Phase 10: notifications
+
+class Notification(Base):
+    """An in-app message for one account (shown under the bell in that account's portal)."""
+
+    __tablename__ = "notifications"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    account_id: Mapped[str] = mapped_column(ForeignKey("accounts.id", ondelete="CASCADE"), index=True)
+    kind: Mapped[str] = mapped_column(String(40), index=True)
+    title: Mapped[str] = mapped_column(String(160))
+    body: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    listing_id: Mapped[str | None] = mapped_column(String(32), nullable=True, index=True)
+    read_at: Mapped[datetime | None] = mapped_column(UTCDateTime(), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow, index=True)

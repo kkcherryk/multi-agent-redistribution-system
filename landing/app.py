@@ -1,4 +1,4 @@
-"""Role-selection landing page (port 8080): choose Restaurant, NGO or Host before login (Module 1)."""
+"""Role-selection landing page (port 8004): choose Restaurant, NGO or Host before login (Module 1)."""
 from __future__ import annotations
 
 import html
@@ -15,6 +15,8 @@ CARDS = [
 
 def create_landing_app(portal_urls: dict[str, str]) -> FastAPI:
     app = FastAPI(title="FRS landing")
+    from portals import security
+    security.install(app)
     cards = "".join(
         f'<a class="card card-{key}" href="{html.escape(portal_urls[key])}" data-portal="{key}">'
         f"<h2>{html.escape(name)}</h2><p>{html.escape(desc)}</p><span>Continue &rarr;</span></a>"

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, FastAPI, File, Form, HTTPException, Request, Response, UploadFile
+from fastapi import APIRouter, Depends, FastAPI, File, Form, HTTPException, Query, Request, Response, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -13,6 +13,8 @@ from shared.config import PORTAL_ROLE
 from shared.core_client import CoreClient, CoreError, CoreUnavailable
 from shared.security import decode_session_token, issue_session_token
 
+from . import security
+
 COMMON_STATIC = Path(__file__).resolve().parent / "common_static"
 MAX_UPLOAD_BYTES = 5 * 1024 * 1024
 
@@ -20,6 +22,10 @@ MAX_UPLOAD_BYTES = 5 * 1024 * 1024
 class LoginIn(BaseModel):
     email: str = Field(max_length=254)
     password: str = Field(max_length=200)
+
+
+class ReadIn(BaseModel):
+    ids: list[int] | None = Field(default=None, max_length=200)
 
 
 class RegisterIn(BaseModel):
@@ -39,6 +45,12 @@ def create_portal_app(*, portal: str, core: CoreClient, jwt_secret: str, static_
     app = FastAPI(title=title or f"FRS {portal} portal", version="0.1.0")
     app.state.portal = portal
     app.state.core = core
+    security.install(app)
+    # Phase 10: slow down password guessing and bulk sign-ups (per portal process, in memory).
+    login_fails = security.AttemptLimiter(limit=5, window=15 * 60)      # per email + IP
+    login_fails_ip = security.AttemptLimiter(limit=30, window=15 * 60)  # per IP, any email
+    signups = security.AttemptLimiter(limit=10, window=60 * 60)         # per IP
+    app.state.limiters = (login_fails, login_fails_ip, signups)
 
     @app.middleware("http")
     async def revalidate_pages_and_scripts(request: Request, call_next):
@@ -73,11 +85,14 @@ def create_portal_app(*, portal: str, core: CoreClient, jwt_secret: str, static_
         if not claims or claims.get("role") != role:
             raise HTTPException(status_code=401, detail="not signed in")
         try:
-            return core.get_account(claims["sub"])  # always fetch fresh status from the authoritative store
+            account = core.get_account(claims["sub"])  # always fetch fresh status from the authoritative store
         except CoreError as exc:
             if exc.status_code == 404:
                 raise HTTPException(status_code=401, detail="not signed in")
             raise
+        if account["email"].endswith("@erased.invalid"):  # Phase 10: an erased account is signed out everywhere
+            raise HTTPException(status_code=401, detail="not signed in")
+        return account
 
     app.state.current_account = current_account
     api = APIRouter(prefix="/api")
@@ -87,14 +102,30 @@ def create_portal_app(*, portal: str, core: CoreClient, jwt_secret: str, static_
         return {"portal": portal, "role": role, "allow_registration": allow_registration, "landing_url": landing_url}
 
     @api.post("/login")
-    def login(body: LoginIn, response: Response):
-        account = core.verify_credentials(body.email, body.password)
+    def login(body: LoginIn, request: Request, response: Response):
+        ip = security.client_ip(request)
+        key = f"{body.email.strip().lower()}|{ip}"
+        wait = max(login_fails.retry_after(key), login_fails_ip.retry_after(ip))
+        if wait:
+            return security.too_many(wait, "sign-in attempts")
+        try:
+            account = core.verify_credentials(body.email, body.password)
+        except CoreError as exc:
+            if exc.status_code == 401:
+                login_fails.hit(key)
+                login_fails_ip.hit(ip)
+            raise
+        login_fails.reset(key)
         _set_session(response, account)
         return account
 
     if allow_registration:
         @api.post("/register", status_code=201)
-        def register(body: RegisterIn, response: Response):
+        def register(body: RegisterIn, request: Request, response: Response):
+            ip = security.client_ip(request)
+            if wait := signups.retry_after(ip):
+                return security.too_many(wait, "registrations from this network")
+            signups.hit(ip)
             account = core.register(**body.model_dump())
             _set_session(response, account)
             return account
@@ -108,6 +139,15 @@ def create_portal_app(*, portal: str, core: CoreClient, jwt_secret: str, static_
     @api.get("/me")
     def me(account: dict = Depends(current_account)):
         return account
+
+    # Phase 10: every signed-in user has an inbox (the bell in the page header).
+    @api.get("/notifications")
+    def notifications(limit: int = Query(default=20, ge=1, le=50), account: dict = Depends(current_account)):
+        return core.notifications(account["id"], limit)
+
+    @api.post("/notifications/read")
+    def notifications_read(body: ReadIn, account: dict = Depends(current_account)):
+        return core.mark_notifications_read(account["id"], body.ids)
 
     if allow_registration:  # applicant portals (restaurant, NGO): onboarding for the signed-in account only
         @api.get("/onboarding")

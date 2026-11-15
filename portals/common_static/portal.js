@@ -57,6 +57,72 @@
     document.querySelectorAll(".tabs button").forEach((b) => b.classList.toggle("active", b.dataset.mode === mode));
   }
 
+
+  // ---- Phase 10: notification bell (polls every 30 s while signed in)
+  let bellTimer = null;
+  function ago(iso) {
+    const s = Math.max(0, (Date.now() - new Date(iso)) / 1000);
+    if (s < 60) return "just now";
+    if (s < 3600) return Math.round(s / 60) + " min ago";
+    if (s < 86400) return Math.round(s / 3600) + " h ago";
+    return new Date(iso).toLocaleDateString();
+  }
+  function ensureBell() {
+    if ($("bell")) return;
+    const wrap = el("div", { class: "bell-wrap" });
+    const btn = el("button", { id: "bell", type: "button", "aria-label": "Notifications", "aria-expanded": "false" }, "🔔");
+    const box = el("div", { id: "inbox", class: "hidden", role: "dialog", "aria-label": "Notifications" });
+    wrap.append(btn, box);
+    $("logout").before(wrap);
+    btn.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      const opening = box.classList.contains("hidden");
+      box.classList.toggle("hidden", !opening);
+      btn.setAttribute("aria-expanded", String(opening));
+      if (opening) await loadInbox();
+    });
+    document.addEventListener("click", (e) => { if (!wrap.contains(e.target)) box.classList.add("hidden"); });
+  }
+  function renderBell(data) {
+    const btn = $("bell");
+    btn.querySelector(".count")?.remove();
+    if (data.unread) btn.append(el("span", { class: "count" }, data.unread > 99 ? "99+" : String(data.unread)));
+    btn.setAttribute("aria-label", `Notifications (${data.unread} unread)`);
+    const box = $("inbox");
+    box.replaceChildren();
+    const head = el("div", { class: "inbox-head" });
+    const all = el("button", { type: "button", class: "small" }, "Mark all read");
+    all.disabled = !data.unread;
+    all.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      renderBell(await api("/notifications/read", { method: "POST", body: JSON.stringify({ ids: null }) }));
+    });
+    head.append(el("strong", {}, "Notifications"), all);
+    box.append(head);
+    if (!data.items.length) box.append(el("p", { class: "note" }, "Nothing yet. You will see updates about your food, pickups and account here."));
+    for (const n of data.items) {
+      const row = el("div", { class: "notice" + (n.read ? "" : " unread") });
+      row.append(el("strong", {}, n.title));
+      if (n.body) row.append(el("div", {}, n.body));
+      row.append(el("div", { class: "when" }, ago(n.created_at)));
+      box.append(row);
+    }
+  }
+  async function loadInbox() {
+    try { renderBell(await api("/notifications")); } catch { /* signed out or core down: keep the last view */ }
+  }
+  function startBell() {
+    ensureBell();
+    $("bell").parentElement.classList.remove("hidden");
+    loadInbox();
+    clearInterval(bellTimer);
+    bellTimer = setInterval(loadInbox, 30000);
+  }
+  function stopBell() {
+    clearInterval(bellTimer);
+    if ($("bell")) $("bell").parentElement.classList.add("hidden");
+  }
+
   function renderProfile(acc) {
     $("auth").classList.add("hidden");
     $("dashboard").classList.remove("hidden");
@@ -75,10 +141,11 @@
       else dd.textContent = v;
       dl.append(dd);
     }
+    startBell();
     if (cfg.onSignedIn) cfg.onSignedIn(acc, ui);
   }
 
-  const ui = { api, el, statusChip, badge, badgeRow, showMsg,
+  const ui = { api, el, statusChip, badge, badgeRow, showMsg, refreshInbox: loadInbox,
                refreshMe: async () => renderProfile(await api("/me")) };
   window.FRS = ui;
 
@@ -86,6 +153,7 @@
     $("auth").classList.remove("hidden");
     $("dashboard").classList.add("hidden");
     $("logout").classList.add("hidden");
+    stopBell();
   }
 
   async function init() {

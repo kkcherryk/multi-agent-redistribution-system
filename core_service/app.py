@@ -50,7 +50,9 @@ def create_core_app(db_url: str, service_keys: dict[str, str], upload_dir: Path 
     Base.metadata.create_all(engine)
     SessionLocal = sessionmaker(engine, expire_on_commit=False)
     upload_dir = Path(upload_dir or DATA_DIR / "uploads")
-    runtime = AgentRuntime([LogisticsAgent(match_radius_km, policy_path), BackupAgent(), NgoAgents(match_radius_km)])
+    from .privacy import HousekeepingAgent
+    runtime = AgentRuntime([LogisticsAgent(match_radius_km, policy_path), BackupAgent(), NgoAgents(match_radius_km),
+                            HousekeepingAgent()])
 
     @asynccontextmanager
     async def lifespan(_app):
@@ -59,7 +61,7 @@ def create_core_app(db_url: str, service_keys: dict[str, str], upload_dir: Path 
         yield
         runtime.stop()
 
-    app = FastAPI(title="FRS Core Data Service", version="0.9.0", lifespan=lifespan)
+    app = FastAPI(title="FRS Core Data Service", version="1.0.0", lifespan=lifespan)
     app.state.runtime = runtime
     app.state.engine = engine
     app.state.SessionLocal = SessionLocal
@@ -109,7 +111,17 @@ def create_core_app(db_url: str, service_keys: dict[str, str], upload_dir: Path 
 
     @app.get("/health")
     def health():
-        return {"status": "ok", "service": "core"}
+        from sqlalchemy import text
+        try:
+            with SessionLocal() as s:
+                s.execute(text("SELECT 1"))
+            db_ok = True
+        except Exception:  # noqa: BLE001 - health must answer, not crash
+            db_ok = False
+        agents = {a["name"]: a["last_error"] is None for a in runtime.status()}
+        return JSONResponse(status_code=200 if db_ok else 503,
+                            content={"status": "ok" if db_ok else "degraded", "service": "core", "version": app.version,
+                                     "database": db_ok, "agents_ok": agents})
 
     @app.post("/internal/accounts", status_code=201)
     def register(body: RegisterIn, portal: str = Depends(caller_portal), db: Session = Depends(get_db)):
@@ -301,6 +313,11 @@ def create_core_app(db_url: str, service_keys: dict[str, str], upload_dir: Path 
 
     # ------------------------------------------------------------------ Phase 7: trust assessment
     app.include_router(trust.build_router(get_db=get_db, require_admin=require_admin))
+
+    # ------------------------------------------------------------------ Phase 10: notifications & privacy
+    from . import notifications, privacy
+    app.include_router(notifications.build_router(get_db=get_db, caller_portal=caller_portal))
+    app.include_router(privacy.build_router(get_db=get_db, require_admin=require_admin, upload_dir=upload_dir))
 
     app.include_router(build_agents_router(get_db=get_db, caller_portal=caller_portal, require_admin=require_admin,
                                            runtime=runtime, pickup_view=listings_router.pickup_view))

@@ -134,7 +134,8 @@ def build_router(*, get_db, caller_portal, require_admin, upload_dir: Path, radi
         view = listings.listing_view(db, listing, audience="ngo")
         restaurant = db.get(Account, listing.restaurant_id)
         rprofile = db.get(RestaurantProfile, listing.restaurant_id)
-        view["restaurant"].update(phone=restaurant.phone if restaurant else None,
+        in_progress = listing.status in ListingStatus.IN_PROGRESS  # privacy rule: contact only while working on it
+        view["restaurant"].update(phone=restaurant.phone if restaurant and in_progress else None,
                                   contact_name=rprofile.applicant_name if rprofile else None)
         return view
 

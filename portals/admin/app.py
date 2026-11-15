@@ -4,6 +4,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, Query
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 from portals.common import create_portal_app, default_core_client, document_response
@@ -14,6 +15,10 @@ STATIC = Path(__file__).resolve().parent / "static"
 
 class NoteIn(BaseModel):
     note: str = Field(max_length=2000)
+
+
+class EraseIn(BaseModel):
+    confirm: str = Field(max_length=20)
 
 
 class ReviewIn(BaseModel):
@@ -60,6 +65,25 @@ def create_admin_app(core: CoreClient, jwt_secret: str, **kwargs) -> FastAPI:
     @app.get("/api/listings")
     def listings(status: str | None = None, _: dict = Depends(host)):
         return core.all_listings(status)
+
+    # ---- Phase 10: privacy & retention
+    @app.get("/api/privacy")
+    def privacy(_: dict = Depends(host)):
+        return core.privacy_policy()
+
+    @app.post("/api/privacy/purge")
+    def privacy_purge(_: dict = Depends(host)):
+        return core.privacy_purge()
+
+    @app.get("/api/privacy/accounts/{account_id}/export")
+    def export_account(account_id: str, _: dict = Depends(host)):
+        data = core.export_account(account_id)
+        return JSONResponse(data, headers={"Content-Disposition": f'attachment; filename="account-{account_id}.json"',
+                                           "Cache-Control": "private, no-store"})
+
+    @app.post("/api/privacy/accounts/{account_id}/erase")
+    def erase_account(account_id: str, body: EraseIn, me: dict = Depends(host)):
+        return core.erase_account(account_id, body.confirm, me["id"])
 
     # ---- Phase 9: learned dispatch (host controls it)
     @app.get("/api/learned-dispatch")

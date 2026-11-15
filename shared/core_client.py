@@ -198,3 +198,24 @@ class CoreClient:
 
     def switch_dispatch(self, enabled: bool, host_id: str) -> dict:
         return self._request("PUT", "/internal/learned-dispatch", json={"enabled": enabled, "host_id": host_id})
+
+    # ---- Phase 10: notifications (each portal reads only its own users' inboxes)
+    def notifications(self, account_id: str, limit: int = 20) -> dict:
+        return self._request("GET", f"/internal/accounts/{account_id}/notifications", params={"limit": limit})
+
+    def mark_notifications_read(self, account_id: str, ids: list[int] | None) -> dict:
+        return self._request("POST", f"/internal/accounts/{account_id}/notifications/read", json={"ids": ids})
+
+    # ---- Phase 10: privacy & retention (host only)
+    def privacy_policy(self) -> dict:
+        return self._request("GET", "/internal/privacy")
+
+    def privacy_purge(self) -> dict:
+        return self._request("POST", "/internal/privacy/purge")
+
+    def export_account(self, account_id: str) -> dict:
+        return self._request("GET", f"/internal/privacy/accounts/{account_id}/export")
+
+    def erase_account(self, account_id: str, confirm: str, host_id: str) -> dict:
+        return self._request("POST", f"/internal/privacy/accounts/{account_id}/erase",
+                             json={"confirm": confirm, "host_id": host_id})

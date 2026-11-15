@@ -20,6 +20,8 @@ def record_event(session: Session, type_: str, *, portal: str | None = None, act
                  subject_id: str | None = None, **payload) -> Event:
     ev = Event(type=type_, portal=portal, actor_id=actor_id, subject_id=subject_id, payload=payload)
     session.add(ev)
+    from .notifications import on_event  # local import: notifications reads models that import nothing from here
+    on_event(session, ev)
     return ev
 
 
