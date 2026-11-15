@@ -118,7 +118,7 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent);
 label{font-weight:600;font-size:.85rem}
 .tabs{background:var(--bg);padding:5px;border-radius:999px}.tabs button{border:0;background:transparent}
 .tabs button.active{background:var(--accent);color:#fff}
-.section-tabs{background:var(--card);padding:6px;border-radius:22px;box-shadow:var(--shadow);position:sticky;top:70px;z-index:400}
+.section-tabs{background:var(--card);padding:6px;border-radius:22px;box-shadow:var(--shadow)}
 .section-tabs button{border:0;background:transparent}.section-tabs button.active{background:var(--accent);color:#fff}
 .status,.pill,.badge{font-weight:600}
 th{font-family:var(--head);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em}

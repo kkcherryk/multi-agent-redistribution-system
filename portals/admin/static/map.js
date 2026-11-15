@@ -137,8 +137,11 @@
       if (!window.L) { $("map-summary").textContent = "The map library could not be loaded (no internet connection?)."; return; }
       if (!map) {
         map = L.map("map", { scrollWheelZoom: true }).setView([12.9716, 77.5946], 12);
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-          maxZoom: 19, attribution: "&copy; OpenStreetMap contributors" }).addTo(map);
+        // OpenStreetMap refuses tile requests that carry no Referer (its tile usage policy), and the page's
+        // Referrer-Policy is same-origin, so the tiles send just our origin.
+        L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          maxZoom: 19, referrerPolicy: "strict-origin-when-cross-origin",
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' }).addTo(map);
         layer = L.layerGroup().addTo(map);
         const stopAutoFit = () => { autoFit = false; };
         map.on("dragstart", stopAutoFit);
