@@ -13,9 +13,9 @@ from fastapi.responses import JSONResponse
 # Pages load Leaflet (unpkg), Chart.js (jsdelivr) and OpenStreetMap tiles; everything else comes from the portal.
 PAGE_CSP = ("default-src 'self'; "
             "script-src 'self' 'unsafe-inline' https://unpkg.com https://cdn.jsdelivr.net; "
-            "style-src 'self' 'unsafe-inline' https://unpkg.com; "
-            "img-src 'self' data: blob: https://*.tile.openstreetmap.org https://unpkg.com; "
-            "connect-src 'self'; font-src 'self' data:; object-src 'none'; base-uri 'self'; "
+            "style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; "
+            "img-src 'self' data: blob: https://*.tile.openstreetmap.org https://unpkg.com https://images.unsplash.com; "
+            "connect-src 'self'; font-src 'self' data: https://fonts.gstatic.com; object-src 'none'; base-uri 'self'; "
             "form-action 'self'; frame-ancestors 'none'")
 SECURITY_HEADERS = {
     "X-Content-Type-Options": "nosniff",

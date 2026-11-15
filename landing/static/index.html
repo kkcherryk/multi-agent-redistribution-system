@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Food Redistribution System</title>
+<meta name="description" content="Connecting restaurants with NGOs through intelligent food redistribution.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Open+Sans:wght@400;500;600&family=Caveat:wght@700&display=swap">
+<link rel="stylesheet" href="/static/landing.css">
+</head><body>
+
+<header class="nav" id="nav">
+  <div class="nav-in">
+    <a class="brand" href="#home" aria-label="Home">
+      <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="19" fill="#f4a623"/><path d="M9 21h22a11 11 0 0 1-22 0z" fill="#fff"/><path d="M15 17c0-3 3-3 3-6M21 17c0-3 3-3 3-6" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg></span>
+      <span class="brand-text"><b>Food Redistribution</b><small>Multi-Agent System</small></span>
+    </a>
+    <button class="menu-btn" id="menu-btn" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
+    <nav class="links" id="links">
+      <a href="#home">Home</a><a href="#about">About</a><a href="#how">How it works</a><a href="#impact">Impact</a><a href="#contact">Contact</a>
+      <div class="login-wrap">
+        <button class="btn btn-outline" id="login-btn" aria-expanded="false" aria-haspopup="true">Log in</button>
+        <div class="login-menu" id="login-menu" role="menu">
+          <a role="menuitem" href="{{RESTAURANT_URL}}" data-portal="restaurant"><i class="dot dot-r"></i><span><b>Restaurant</b><small>Share surplus food</small></span></a>
+          <a role="menuitem" href="{{NGO_URL}}" data-portal="ngo"><i class="dot dot-n"></i><span><b>NGO</b><small>Collect and deliver</small></span></a>
+          <a role="menuitem" href="{{ADMIN_URL}}" data-portal="admin"><i class="dot dot-a"></i><span><b>Host</b><small>Project team</small></span></a>
+        </div>
+      </div>
+      <a class="btn btn-green" href="#join">Get started</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="hero-slides" aria-hidden="true">
+    <div class="slide on" style="--img:url('https://images.unsplash.com/photo-1593113616828-6f22bca04804?w=1800&q=75&auto=format&fit=crop')"></div>
+    <div class="slide" style="--img:url('https://images.unsplash.com/photo-1577219492769-b63a779fac28?w=1800&q=75&auto=format&fit=crop')"></div>
+    <div class="slide" style="--img:url('https://images.unsplash.com/photo-1692609659165-1ec4d8108c0e?w=1800&q=75&auto=format&fit=crop')"></div>
+  </div>
+  <div class="hero-wash" aria-hidden="true"></div>
+  <svg class="doodles" aria-hidden="true" viewBox="0 0 600 500"><g fill="none" stroke="#7a6a52" stroke-width="2" stroke-linecap="round" opacity=".45">
+    <path d="M60 80c20-20 50-20 70 0M50 92h90" /><path d="M70 70c0-10 8-10 8-20M90 70c0-10 8-10 8-20"/>
+    <path d="M480 60l60-20-20 60-14-26z"/><path d="M506 74l14-34"/>
+    <circle cx="520" cy="380" r="26"/><path d="M500 380h40M520 360v40"/>
+    <path d="M70 400l12 26 26 4-19 18 5 26-24-12-24 12 5-26-19-18 26-4z"/>
+    <path d="M300 30c10 6 20 6 30 0s20-6 30 0"/></g></svg>
+  <div class="hero-in">
+    <p class="eyebrow reveal">Food is too valuable to waste</p>
+    <h1 class="reveal d1">Don't waste food.<br><span class="script">Create hope.</span></h1>
+    <p class="lead reveal d2">Connecting restaurants with NGOs through intelligent food redistribution. Because every meal saved can make a difference in someone's life.</p>
+    <div class="cta-row reveal d3">
+      <a class="btn btn-yellow btn-lg" href="{{RESTAURANT_URL}}">Donate surplus food</a>
+      <a class="btn btn-blue btn-lg" href="{{NGO_URL}}">Find food donations</a>
+    </div>
+  </div>
+  <div class="hero-dots" id="hero-dots" aria-hidden="true"><i class="on"></i><i></i><i></i></div>
+  <a class="scroll-cue" href="#story" aria-label="Scroll down"><span></span></a>
+</section>
+
+<!-- STORY -->
+<section class="story" id="story">
+  <div class="wrap">
+    <h2 class="section-title reveal">One place's surplus can be<br>another place's <em>survival.</em></h2>
+    <p class="section-lead reveal d1">What remains unused in one place can become someone's next meal. We built the bridge between the two.</p>
+
+    <div class="story-row reveal-row">
+      <figure class="story-img parallax" data-speed=".06"><img loading="lazy" src="https://images.unsplash.com/photo-1588416820614-f8d6ac6cea56?w=1100&q=75&auto=format&fit=crop" alt="Large steel cooking pots on a restaurant stove"></figure>
+      <div class="story-text"><span class="num">01</span><h3>Kitchens cook more than they serve</h3><p>Every evening, restaurants are left with fresh, safe food that was simply never ordered. Without an easy way to pass it on, most of it is thrown away.</p></div>
+    </div>
+    <div class="story-row flip reveal-row">
+      <figure class="story-img parallax" data-speed=".06"><img loading="lazy" src="https://images.unsplash.com/photo-1599059813005-11265ba4b4ce?w=1100&q=75&auto=format&fit=crop" alt="Volunteers sorting food donations"></figure>
+      <div class="story-text"><span class="num">02</span><h3>NGOs are searching every day</h3><p>Shelters, orphanages and old-age homes rely on volunteers who spend hours looking for food — often just a few streets away from where it is being wasted.</p></div>
+    </div>
+    <div class="story-row reveal-row">
+      <figure class="story-img parallax" data-speed=".06"><img loading="lazy" src="https://images.unsplash.com/photo-1697183475807-8111ad28be70?w=1100&q=75&auto=format&fit=crop" alt="A young boy sitting in front of a bowl of food"></figure>
+      <div class="story-text"><span class="num">03</span><h3>And someone is still waiting for a meal</h3><p>Hunger is rarely a problem of too little food. It is a problem of food not reaching the right place in time.</p></div>
+    </div>
+    <div class="story-row flip reveal-row">
+      <figure class="story-img parallax" data-speed=".06"><img loading="lazy" src="https://images.unsplash.com/photo-1593113646773-028c64a8f1b8?w=1100&q=75&auto=format&fit=crop" alt="Volunteers standing with boxes of donated food"></figure>
+      <div class="story-text"><span class="num">04</span><h3>We connect the two — in minutes</h3><p>A restaurant posts its surplus, and our agents find the nearest trusted NGO that can collect it before it spoils. No phone chains, no guesswork.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="about" id="about">
+  <div class="wrap about-in">
+    <div class="about-art reveal">
+      <figure class="about-back"><img loading="lazy" src="https://images.unsplash.com/photo-1622021142947-da7dedc7c39a?w=900&q=75&auto=format&fit=crop" alt="A chef chopping vegetables in a kitchen"></figure>
+      <figure class="about-front float"><img loading="lazy" src="https://images.unsplash.com/photo-1694886322023-0b0c4283f3f7?w=700&q=75&auto=format&fit=crop" alt="A little girl eating a meal"></figure>
+    </div>
+    <div class="about-text">
+      <h2 class="reveal">About the project</h2>
+      <p class="reveal d1">The <b>Multi-Agent Food Redistribution System</b> uses trust-aware negotiation and reinforcement learning to move surplus food. It brings restaurants and NGOs together through intelligent coordination, so surplus food reaches people while it is still fresh and safe.</p>
+      <div class="vm">
+        <div class="vm-item reveal d2"><h3>Our vision</h3><p>No good meal is thrown away while someone nearby goes hungry.</p></div>
+        <div class="vm-item reveal d3"><h3>Our approach</h3><p>Software agents that weigh trust, distance and time, and learn to dispatch better with every pickup.</p></div>
+      </div>
+      <a class="btn btn-blue reveal d3" href="#how">See how it works</a>
+    </div>
+  </div>
+</section>
+
+<!-- TWO EXPERIENCES -->
+<section class="join" id="join">
+  <div class="wrap">
+    <h2 class="section-title center reveal">Two sides. <em>One table.</em></h2>
+    <div class="join-grid">
+      <article class="role role-r reveal">
+        <figure class="role-img"><img loading="lazy" src="https://images.unsplash.com/photo-1600565193348-f74bd3c7ccdf?w=1000&q=75&auto=format&fit=crop" alt="A chef cooking in a restaurant kitchen"><span class="tag">For restaurants</span></figure>
+        <div class="role-body">
+          <h3>Turn your surplus into someone's meal.</h3>
+          <ol class="flow">
+            <li><b>Register</b> your restaurant and get verified</li>
+            <li><b>Post surplus food</b> — quantity, category, photo</li>
+            <li><b>Set times</b> — when it was cooked and when it is safe until</li>
+            <li><b>Pickup point</b> pinned on the map</li>
+            <li><b>Get matched</b> with a nearby trusted NGO</li>
+            <li><b>Track</b> collection and see your impact</li>
+          </ol>
+          <a class="btn btn-yellow" href="{{RESTAURANT_URL}}">Start donating food</a>
+        </div>
+      </article>
+      <article class="role role-n reveal d1">
+        <figure class="role-img"><img loading="lazy" src="https://images.unsplash.com/photo-1628717341663-0007b0ee2597?w=1000&q=75&auto=format&fit=crop" alt="Volunteers packing food bags"><span class="tag">For NGOs</span></figure>
+        <div class="role-body">
+          <h3>Find food. Feed communities. Create impact.</h3>
+          <ol class="flow">
+            <li><b>Register</b> your organisation and get verified</li>
+            <li><b>Discover</b> food posted near you</li>
+            <li><b>See</b> quantity, safe-until time and pickup point</li>
+            <li><b>Accept</b> a donation with one tap</li>
+            <li><b>Collect and deliver</b> to the people you serve</li>
+            <li><b>Look back</b> at your history and meals delivered</li>
+          </ol>
+          <a class="btn btn-green" href="{{NGO_URL}}">Join as an NGO</a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how" id="how">
+  <div class="wrap">
+    <h2 class="section-title center light reveal">How we work to make a difference</h2>
+    <p class="section-lead center light reveal d1">From a restaurant counter to a hungry family — in seven simple steps.</p>
+    <ol class="timeline" id="timeline">
+      <li><span class="ico">🍲</span><b>Food listed</b><small>A restaurant posts its surplus</small></li>
+      <li><span class="ico">🔎</span><b>Needs found</b><small>Agents look for NGOs that can use it</small></li>
+      <li><span class="ico">🤝</span><b>Negotiation</b><small>Trust, distance and time are weighed</small></li>
+      <li><span class="ico">✅</span><b>Assigned</b><small>The best NGO gets the donation</small></li>
+      <li><span class="ico">🛵</span><b>On the way</b><small>Pickup is coordinated and tracked</small></li>
+      <li><span class="ico">📦</span><b>Collected</b><small>Food is checked and received</small></li>
+      <li><span class="ico">❤️</span><b>Delivered</b><small>It reaches people who need it</small></li>
+    </ol>
+    <div class="timeline-bar" aria-hidden="true"><i id="timeline-fill"></i></div>
+  </div>
+</section>
+
+<!-- AGENTS -->
+<section class="agents">
+  <div class="wrap agents-in">
+    <div class="agents-text">
+      <h2 class="reveal">Not just a listing site.<br><em>A team of smart agents.</em></h2>
+      <p class="reveal d1">Behind every pickup, small software agents talk to each other — like a coordinator who never sleeps.</p>
+      <ul class="agent-list">
+        <li class="reveal d1"><i style="--c:#f4a623"></i><b>Restaurant agents</b> announce new food</li>
+        <li class="reveal d1"><i style="--c:#4cb648"></i><b>NGO agents</b> say what they can collect</li>
+        <li class="reveal d2"><i style="--c:#1d6fb8"></i><b>Logistics agents</b> plan the quickest pickup</li>
+        <li class="reveal d2"><i style="--c:#8b5cf6"></i><b>Storage &amp; backup agents</b> step in if a pickup fails</li>
+        <li class="reveal d3"><i style="--c:#0b93b8"></i><b>Trust-aware negotiation</b> favours reliable partners</li>
+        <li class="reveal d3"><i style="--c:#e2574c"></i><b>Reinforcement learning</b> improves every dispatch</li>
+      </ul>
+    </div>
+    <div class="net reveal d1" aria-hidden="true">
+      <svg viewBox="0 0 440 440" id="net">
+        <g class="links" stroke="#bcd6ee" stroke-width="2" fill="none">
+          <path id="p1" d="M220 220L90 110"/><path id="p2" d="M220 220L350 100"/><path id="p3" d="M220 220L380 260"/>
+          <path id="p4" d="M220 220L300 370"/><path id="p5" d="M220 220L110 350"/><path id="p6" d="M220 220L60 240"/>
+          <path d="M90 110L350 100M350 100L380 260M380 260L300 370M300 370L110 350M110 350L60 240M60 240L90 110" stroke-dasharray="4 6" opacity=".7"/>
+        </g>
+        <g class="pulses">
+          <circle r="5" fill="#f4a623"><animateMotion dur="2.6s" repeatCount="indefinite"><mpath href="#p1"/></animateMotion></circle>
+          <circle r="5" fill="#4cb648"><animateMotion dur="3.1s" repeatCount="indefinite" keyPoints="1;0" keyTimes="0;1"><mpath href="#p2"/></animateMotion></circle>
+          <circle r="5" fill="#1d6fb8"><animateMotion dur="2.2s" repeatCount="indefinite"><mpath href="#p3"/></animateMotion></circle>
+          <circle r="5" fill="#8b5cf6"><animateMotion dur="3.4s" repeatCount="indefinite" keyPoints="1;0" keyTimes="0;1"><mpath href="#p4"/></animateMotion></circle>
+          <circle r="5" fill="#0b93b8"><animateMotion dur="2.8s" repeatCount="indefinite"><mpath href="#p5"/></animateMotion></circle>
+          <circle r="5" fill="#e2574c"><animateMotion dur="2.4s" repeatCount="indefinite" keyPoints="1;0" keyTimes="0;1"><mpath href="#p6"/></animateMotion></circle>
+        </g>
+        <g class="nodes" font-family="Montserrat, sans-serif" font-size="12" font-weight="700" text-anchor="middle">
+          <g class="node"><circle cx="90" cy="110" r="30" fill="#fff4e0" stroke="#f4a623" stroke-width="3"/><text x="90" y="115" font-size="20">🍲</text><text x="90" y="160" fill="#244a6b">Restaurant</text></g>
+          <g class="node"><circle cx="350" cy="100" r="30" fill="#eaf7e9" stroke="#4cb648" stroke-width="3"/><text x="350" y="106" font-size="20">🏠</text><text x="350" y="150" fill="#244a6b">NGO</text></g>
+          <g class="node"><circle cx="380" cy="260" r="30" fill="#e6f0fa" stroke="#1d6fb8" stroke-width="3"/><text x="380" y="266" font-size="20">🛵</text><text x="380" y="310" fill="#244a6b">Logistics</text></g>
+          <g class="node"><circle cx="300" cy="370" r="30" fill="#f1ebfe" stroke="#8b5cf6" stroke-width="3"/><text x="300" y="376" font-size="20">🏬</text><text x="300" y="420" fill="#244a6b">Storage</text></g>
+          <g class="node"><circle cx="110" cy="350" r="30" fill="#e3f5f9" stroke="#0b93b8" stroke-width="3"/><text x="110" y="356" font-size="20">⭐</text><text x="110" y="400" fill="#244a6b">Trust</text></g>
+          <g class="node"><circle cx="60" cy="240" r="30" fill="#fdeceb" stroke="#e2574c" stroke-width="3"/><text x="60" y="246" font-size="20">🧠</text><text x="60" y="290" fill="#244a6b">Learning</text></g>
+          <g class="hub"><circle cx="220" cy="220" r="52" fill="#1d5f96"/><circle cx="220" cy="220" r="52" fill="none" stroke="#1d5f96" stroke-width="2" class="ripple"/><text x="220" y="215" fill="#fff" font-size="13">Matching</text><text x="220" y="233" fill="#fff" font-size="13">&amp; routing</text></g>
+        </g>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- IMPACT -->
+<section class="impact" id="impact">
+  <div class="wrap">
+    <h2 class="section-title center reveal">Built to move food <em>fast</em></h2>
+    <p class="section-lead center reveal d1">What the platform does for every single donation.</p>
+    <div class="stats">
+      <div class="stat reveal"><b class="count" data-to="4">0</b><span>agents working round the clock</span></div>
+      <div class="stat reveal d1"><b class="count" data-to="3">0</b><span>portals — restaurant, NGO, host</span></div>
+      <div class="stat reveal d2"><b class="count" data-to="7">0</b><span>tracked steps from kitchen to plate</span></div>
+      <div class="stat reveal d3"><b class="count" data-to="100" data-suffix="%">0</b><span>partners verified before they join</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ORBIT -->
+<section class="orbit-sec" aria-label="Moments from the journey of a meal">
+  <div class="orbit">
+    <div class="ring" id="ring">
+      <figure style="--a:0deg"><img loading="lazy" src="https://images.unsplash.com/photo-1577106263724-2c8e03bfe9cf?w=360&q=70&auto=format&fit=crop" alt="Food being plated"></figure>
+      <figure style="--a:45deg"><img loading="lazy" src="https://images.unsplash.com/photo-1593113598332-cd288d649433?w=360&q=70&auto=format&fit=crop" alt="Volunteers loading boxes of food"></figure>
+      <figure style="--a:90deg"><img loading="lazy" src="https://images.unsplash.com/photo-1764967411778-01b04900447d?w=360&q=70&auto=format&fit=crop" alt="Children standing together"></figure>
+      <figure style="--a:135deg"><img loading="lazy" src="https://images.unsplash.com/photo-1786719664233-f7adaf17393a?w=360&q=70&auto=format&fit=crop" alt="Food being loaded into a truck"></figure>
+      <figure style="--a:180deg"><img loading="lazy" src="https://images.unsplash.com/photo-1593560704563-f176a2eb61db?w=360&q=70&auto=format&fit=crop" alt="A bowl of rice"></figure>
+      <figure style="--a:225deg"><img loading="lazy" src="https://images.unsplash.com/photo-1593113630400-ea4288922497?w=360&q=70&auto=format&fit=crop" alt="A volunteer beside food crates"></figure>
+      <figure style="--a:270deg"><img loading="lazy" src="https://images.unsplash.com/photo-1712231872585-7ff87adc7bce?w=360&q=70&auto=format&fit=crop" alt="A community gathering"></figure>
+      <figure style="--a:315deg"><img loading="lazy" src="https://images.unsplash.com/photo-1622021142947-da7dedc7c39a?w=360&q=70&auto=format&fit=crop" alt="A chef preparing vegetables"></figure>
+    </div>
+    <div class="orbit-center">
+      <img loading="lazy" src="https://images.unsplash.com/photo-1744012254416-f72fb5f8290c?w=700&q=75&auto=format&fit=crop" alt="A child eating from a bowl">
+    </div>
+  </div>
+  <p class="orbit-quote reveal">Saving food is not just reducing waste.<br><span>It is giving someone another chance to have a meal.</span></p>
+</section>
+
+<!-- CTA SPLIT -->
+<section class="cta-split">
+  <figure><img loading="lazy" src="https://images.unsplash.com/photo-1593113616828-6f22bca04804?w=1200&q=75&auto=format&fit=crop" alt="Volunteers packing food"></figure>
+  <div class="cta-panel">
+    <h2>Will you help<br>end hunger?</h2>
+    <p>Your surplus can do more than fill a bin. It can fill a plate tonight.</p>
+    <div class="cta-row">
+      <a class="btn btn-yellow" href="{{RESTAURANT_URL}}">I'm a restaurant</a>
+      <a class="btn btn-white" href="{{NGO_URL}}">I'm an NGO</a>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="foot" id="contact">
+  <div class="wrap foot-in">
+    <div>
+      <a class="brand" href="#home"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="19" fill="#f4a623"/><path d="M9 21h22a11 11 0 0 1-22 0z" fill="#fff"/></svg></span><span class="brand-text"><b>Food Redistribution</b><small>Multi-Agent System</small></span></a>
+      <p class="foot-note">Multi-Agent Food Redistribution System using trust-aware negotiation and reinforcement learning.</p>
+    </div>
+    <div><h4>Navigate</h4><a href="#about">About</a><a href="#how">How it works</a><a href="#impact">Impact</a></div>
+    <div><h4>Portals</h4><a href="{{RESTAURANT_URL}}">Restaurant</a><a href="{{NGO_URL}}">NGO</a><a href="{{ADMIN_URL}}">Host</a></div>
+    <div><h4>Contact</h4><p>Have surplus food or need it?<br>Register on a portal and our team will verify you.</p></div>
+  </div>
+  <div class="foot-line wrap"><span>© <span id="year">2026</span> Food Redistribution System</span><span>Made to reduce food waste</span></div>
+  <svg class="crowd" viewBox="0 0 1600 150" preserveAspectRatio="xMidYMax slice" aria-hidden="true"><g fill="#2f6ea3">
+    <!-- simple silhouettes: givers, a van, receivers -->
+    <circle cx="40" cy="58" r="13"/><path d="M24 150v-62q0-20 16-20t16 20v62z"/><rect x="58" y="78" width="34" height="22" rx="3"/>
+    <circle cx="118" cy="52" r="14"/><path d="M100 150v-66q0-22 18-22t18 22v66z"/>
+    <circle cx="190" cy="76" r="10"/><path d="M178 150v-48q0-16 12-16t12 16v48z"/>
+    <path d="M250 150v-80h120q34 0 52 40l14 40z"/><circle cx="285" cy="150" r="16" fill="#fff"/><circle cx="400" cy="150" r="16" fill="#fff"/><circle cx="285" cy="150" r="10"/><circle cx="400" cy="150" r="10"/>
+    <circle cx="480" cy="56" r="13"/><path d="M464 150v-64q0-20 16-20t16 20v64z"/><rect x="496" y="84" width="30" height="18" rx="3"/>
+    <circle cx="560" cy="72" r="11"/><path d="M547 150v-52q0-17 13-17t13 17v52z"/>
+    <circle cx="640" cy="54" r="13"/><path d="M624 150v-66q0-20 16-20t16 20v66z"/><circle cx="690" cy="84" r="9"/><path d="M680 150v-42q0-14 10-14t10 14v42z"/>
+    <circle cx="760" cy="58" r="13"/><path d="M744 150v-62q0-20 16-20t16 20v62z"/><path d="M776 92l30-10" stroke="#2f6ea3" stroke-width="8" stroke-linecap="round"/>
+    <rect x="806" y="100" width="70" height="50" rx="4"/><circle cx="830" cy="68" r="11"/><circle cx="860" cy="72" r="10"/>
+    <circle cx="930" cy="52" r="14"/><path d="M912 150v-68q0-22 18-22t18 22v68z"/>
+    <circle cx="1000" cy="78" r="10"/><path d="M988 150v-46q0-16 12-16t12 16v46z"/><circle cx="1040" cy="80" r="10"/><path d="M1028 150v-44q0-16 12-16t12 16v44z"/>
+    <circle cx="1110" cy="56" r="13"/><path d="M1094 150v-64q0-20 16-20t16 20v64z"/>
+    <circle cx="1180" cy="72" r="11"/><path d="M1168 150v-50q0-17 12-17t12 17v50z"/><path d="M1190 96l18-40" stroke="#2f6ea3" stroke-width="7" stroke-linecap="round"/>
+    <circle cx="1250" cy="64" r="12"/><path d="M1236 150v-56q0-18 14-18t14 18v56z"/><path d="M1262 92l20-44" stroke="#2f6ea3" stroke-width="7" stroke-linecap="round"/>
+    <circle cx="1210" cy="22" r="8"/>
+    <circle cx="1330" cy="54" r="13"/><path d="M1314 150v-66q0-20 16-20t16 20v66z"/><path d="M1346 86l22-34" stroke="#2f6ea3" stroke-width="7" stroke-linecap="round"/>
+    <circle cx="1410" cy="74" r="10"/><path d="M1398 150v-48q0-16 12-16t12 16v48z"/>
+    <circle cx="1480" cy="56" r="13"/><path d="M1464 150v-64q0-20 16-20t16 20v64z"/><path d="M1496 84l22-30M1464 84l-20-28" stroke="#2f6ea3" stroke-width="7" stroke-linecap="round"/>
+    <circle cx="1560" cy="68" r="11"/><path d="M1547 150v-54q0-17 13-17t13 17v54z"/>
+  </g></svg>
+</footer>
+
+<script src="/static/landing.js"></script>
+</body></html>

@@ -90,3 +90,52 @@ header>div{display:flex;align-items:center;gap:10px}
 .notice{padding:8px 6px;border-bottom:1px solid var(--line);font-size:.88rem}
 .notice.unread{border-left:3px solid var(--accent);padding-left:8px}
 .notice strong{display:block}.notice .when{color:var(--muted);font-size:.78rem}
+
+/* ===== Theme (matches the landing page): soft sky backgrounds, deep-blue type, rounded cards, pill buttons ===== */
+:root{--bg:#f3f8fd;--fg:#24313c;--muted:#5f6b75;--card:#fff;--line:#dce7f1;--link:#1d5f96;--ink:#123c5e;
+  --head:"Montserrat",system-ui,sans-serif;--body:"Open Sans",system-ui,sans-serif;--shadow:0 14px 34px -20px rgba(18,60,94,.45);--ease:cubic-bezier(.22,.8,.24,1)}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1a24;--fg:#e6edf3;--muted:#9fb0bf;--card:#16222e;--line:#263646;--link:#8cc4f2;--ink:#e6edf3;--shadow:0 14px 34px -20px rgba(0,0,0,.8)}}
+body{font-family:var(--body);background:var(--bg);line-height:1.55}
+h1,h2,h3{font-family:var(--head);color:var(--ink)}
+header{position:sticky;top:0;z-index:500;background:color-mix(in srgb,var(--card) 92%,transparent);backdrop-filter:blur(8px);border-bottom:0;box-shadow:0 6px 24px -16px rgba(18,60,94,.5);padding:12px 24px}
+header h1{display:flex;align-items:center;gap:10px;font-size:1.08rem;font-weight:800;color:var(--ink)}
+header h1::before{content:"";width:34px;height:34px;flex:none;border-radius:50%;background:#f4a623 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M9 21h22a11 11 0 0 1-22 0z' fill='%23fff'/%3E%3Cpath d='M15 17c0-3 3-3 3-6M21 17c0-3 3-3 3-6' stroke='%23fff' stroke-width='2.2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") center/100% no-repeat}
+header h1::after{content:"";width:8px;height:8px;border-radius:50%;background:var(--accent);margin-left:2px}
+header a{text-decoration:none;font-weight:600;color:var(--muted)}header a:hover{color:var(--accent)}
+main{max-width:960px;padding:36px 20px 60px}
+.panel{border:0;border-radius:22px;box-shadow:var(--shadow);padding:28px;animation:rise .6s var(--ease) both}
+.panel h2{font-size:1.25rem;font-weight:700}
+.card,.listing{border:1px solid var(--line);border-radius:16px;background:var(--card);transition:transform .3s var(--ease),box-shadow .3s}
+.listing:hover,.card:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.listing img,.thumbs img,.doc img{border-radius:12px}
+button{border-radius:999px;padding:10px 20px;font-weight:600;transition:transform .2s var(--ease),background .2s,box-shadow .2s,color .2s}
+button:not(:disabled):hover{transform:translateY(-1px);box-shadow:0 8px 18px -12px rgba(0,0,0,.5)}
+button.primary{border-radius:999px;padding:13px 20px;font-size:1rem}
+button.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+button.small{padding:5px 12px}
+input,textarea,select{border-radius:12px;padding:11px 14px;background:var(--card);transition:border-color .2s,box-shadow .2s}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 18%,transparent)}
+label{font-weight:600;font-size:.85rem}
+.tabs{background:var(--bg);padding:5px;border-radius:999px}.tabs button{border:0;background:transparent}
+.tabs button.active{background:var(--accent);color:#fff}
+.section-tabs{background:var(--card);padding:6px;border-radius:22px;box-shadow:var(--shadow);position:sticky;top:70px;z-index:400}
+.section-tabs button{border:0;background:transparent}.section-tabs button.active{background:var(--accent);color:#fff}
+.status,.pill,.badge{font-weight:600}
+th{font-family:var(--head);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em}
+tr:hover td{background:color-mix(in srgb,var(--accent) 5%,transparent)}
+.callout{border-radius:12px}
+#map{border-radius:18px;border:0;box-shadow:var(--shadow)}
+#inbox{border-radius:18px;border:0;box-shadow:0 20px 50px -20px rgba(0,0,0,.45)}
+
+/* sign-in screen: photo on one side, form on the other */
+main:has(#auth:not(.hidden)){max-width:1120px;display:grid;grid-template-columns:1.05fr 1fr;gap:48px;align-items:center;min-height:calc(100vh - 70px);padding-top:24px;padding-bottom:24px}
+main:has(#auth:not(.hidden))::before{content:var(--auth-quote,"Every meal saved can make a difference.");display:flex;align-items:flex-end;padding:36px;min-height:min(620px,78vh);border-radius:28px;color:#fff;font:700 clamp(1.3rem,2.2vw,1.8rem)/1.3 var(--head);
+  background:linear-gradient(180deg,transparent 35%,rgba(10,30,50,.82)),var(--auth-img) center/cover;box-shadow:var(--shadow);animation:rise .8s var(--ease) both}
+#auth{padding:36px 32px;max-width:460px;width:100%;justify-self:center}
+#auth::before{content:var(--auth-title,"Welcome back");display:block;font:700 1.7rem var(--head);color:var(--ink)}
+#auth .tabs{margin-top:8px}
+#auth .tabs::before{content:var(--auth-sub,"");display:none}
+@media (max-width:860px){main:has(#auth:not(.hidden)){grid-template-columns:1fr;gap:20px;min-height:0}main:has(#auth:not(.hidden))::before{min-height:220px;padding:24px}}
+@media (max-width:560px){header{padding:10px 16px}header h1{font-size:.95rem}main{padding:24px 16px 48px}.panel{padding:22px 18px}}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
