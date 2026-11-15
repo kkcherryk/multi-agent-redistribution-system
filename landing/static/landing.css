@@ -199,7 +199,7 @@ section{position:relative}
 @keyframes ball{50%{transform:translateY(-34px)}}
 @keyframes idle{to{transform:translateY(-1.2px)}}
 @keyframes steam{0%,100%{opacity:.25;transform:translateY(0)}50%{opacity:.9;transform:translateY(-6px)}}
-.foot::after{content:"";display:block;height:14px;background:#2f6ea3}
+.foot::after{content:"";display:block;height:14px;background:linear-gradient(90deg,#1d5f96,#0b93b8,#4cb648,#f4a623)}
 
 /* motion */
 .reveal,.reveal-row{opacity:0;transform:translateY(34px);transition:opacity .9s var(--ease),transform .9s var(--ease)}
