@@ -115,4 +115,4 @@ def build_default_app() -> FastAPI:
     core, s = default_core_client("ngo")
     return create_ngo_app(core, s.jwt_secrets["ngo"], cookie_secure=s.cookie_secure,
                           session_ttl_seconds=s.session_ttl_seconds,
-                          landing_url=s.landing_url)
+                          landing_url=s.landing_url, public_url=s.portal_urls["ngo"])

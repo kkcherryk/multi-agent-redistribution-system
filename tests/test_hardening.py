@@ -11,7 +11,10 @@ from tests.conftest import HOST_EMAIL, HOST_PASSWORD, applicant
 
 # Routes that are deliberately open (no sign-in / no service key).
 PUBLIC_CORE = {"/health", "/public/impact"}  # impact: totals only, nothing personal
-PUBLIC_PORTAL = {"/", "/health", "/api/portal", "/api/login", "/api/register", "/api/logout"}
+PUBLIC_PORTAL = {"/", "/health", "/api/portal", "/api/login", "/api/register", "/api/logout",
+                 # other ways in: Google, an SMS code, a password-reset email (all rate limited)
+                 "/api/login/google", "/api/login/code/start", "/api/login/code/verify",
+                 "/api/password/forgot", "/api/password/reset"}
 
 
 def fill(path: str) -> str:

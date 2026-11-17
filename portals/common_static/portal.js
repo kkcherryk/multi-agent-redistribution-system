@@ -51,11 +51,6 @@
     m.className = "msg " + (ok ? "ok" : "err");
   }
 
-  function setMode(mode) {
-    $("login-form").classList.toggle("hidden", mode !== "login");
-    if ($("register-form")) $("register-form").classList.toggle("hidden", mode !== "register");
-    document.querySelectorAll(".tabs button").forEach((b) => b.classList.toggle("active", b.dataset.mode === mode));
-  }
 
 
   // ---- Phase 10: notification bell (polls every 30 s while signed in)
@@ -147,7 +142,8 @@
   }
 
   const ui = { api, el, statusChip, badge, badgeRow, showMsg, refreshInbox: loadInbox,
-               refreshMe: async () => renderProfile(await api("/me")) };
+               refreshMe: async () => renderProfile(await api("/me")),
+               signedIn: (acc) => renderProfile(acc) };
   window.FRS = ui;
 
   function renderSignedOut() {
@@ -160,31 +156,7 @@
   async function init() {
     document.title = cfg.title;
     api("/portal").then((info) => { if ($("home")) $("home").href = info.landing_url; }).catch(() => {});
-    document.querySelectorAll(".tabs button").forEach((b) => b.addEventListener("click", () => setMode(b.dataset.mode)));
-
-    $("login-form").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const f = e.target;
-      try {
-        const acc = await api("/login", { method: "POST", body: JSON.stringify({ email: f.email.value, password: f.password.value }) });
-        f.reset();
-        renderProfile(acc);
-      } catch (err) { showMsg("login-msg", err.message); }
-    });
-
-    if ($("register-form")) {
-      $("register-form").addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const f = e.target;
-        if (f.password.value !== f.confirm.value) return showMsg("register-msg", "Passwords do not match.");
-        try {
-          const acc = await api("/register", { method: "POST", body: JSON.stringify({
-            display_name: f.display_name.value, email: f.email.value, phone: f.phone.value || null, password: f.password.value }) });
-          f.reset();
-          renderProfile(acc);
-        } catch (err) { showMsg("register-msg", err.message); }
-      });
-    }
+    // sign-in, registration, Google, SMS codes and password resets live in signin.js
 
     $("logout").addEventListener("click", async () => {
       await api("/logout", { method: "POST" }).catch(() => {});

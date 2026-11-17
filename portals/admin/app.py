@@ -1,6 +1,7 @@
 """Admin / Host portal backend (port 8001). No self-registration: host accounts are created by the project team."""
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, Query
@@ -140,8 +141,16 @@ def create_admin_app(core: CoreClient, jwt_secret: str, **kwargs) -> FastAPI:
     return app
 
 
+def host_emails_from_env() -> set[str] | None:
+    """FRS_HOST_EMAILS=host@gmail.com[,second@gmail.com]: the only addresses allowed into the host portal."""
+    raw = os.environ.get("FRS_HOST_EMAILS", "")
+    emails = {e.strip().lower() for e in raw.split(",") if e.strip()}
+    return emails or None
+
+
 def build_default_app() -> FastAPI:
     core, s = default_core_client("admin")
     return create_admin_app(core, s.jwt_secrets["admin"], cookie_secure=s.cookie_secure,
                             session_ttl_seconds=s.session_ttl_seconds,
-                            landing_url=s.landing_url)
+                            landing_url=s.landing_url, public_url=s.portal_urls["admin"],
+                            allowed_emails=host_emails_from_env())

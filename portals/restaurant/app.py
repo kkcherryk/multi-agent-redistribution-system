@@ -50,4 +50,4 @@ def build_default_app() -> FastAPI:
     core, s = default_core_client("restaurant")
     return create_restaurant_app(core, s.jwt_secrets["restaurant"], cookie_secure=s.cookie_secure,
                                  session_ttl_seconds=s.session_ttl_seconds,
-                                 landing_url=s.landing_url)
+                                 landing_url=s.landing_url, public_url=s.portal_urls["restaurant"])

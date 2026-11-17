@@ -55,6 +55,23 @@ class CredentialsIn(BaseModel):
     password: str = Field(max_length=200)
 
 
+class FindIn(BaseModel):
+    identifier: str = Field(min_length=3, max_length=254)  # email address or phone number
+    method: str | None = Field(default=None, max_length=20)  # set when this lookup completes a sign-in
+
+
+class PasswordSetIn(BaseModel):
+    password: str = Field(min_length=8, max_length=72)
+    expected_fp: str = Field(min_length=8, max_length=64)
+
+    @field_validator("password")
+    @classmethod
+    def _password_bytes(cls, v: str) -> str:
+        if len(v.encode("utf-8")) > 72:
+            raise ValueError("password must be at most 72 bytes")
+        return v
+
+
 class AccountOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

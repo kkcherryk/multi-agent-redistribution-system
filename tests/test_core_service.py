@@ -49,7 +49,7 @@ def test_verify_credentials_role_bound(core):
     for portal in ("ngo", "admin"):
         r = core.post("/internal/auth/verify", json={"email": "cook@example.org", "password": "secret-pass-1"},
                       headers=svc(portal))
-        assert r.status_code == 401 and r.json()["detail"] == "invalid email or password"
+        assert r.status_code == 401 and r.json()["detail"] == "invalid email, phone number or password"
     assert core.post("/internal/auth/verify", json={"email": "cook@example.org", "password": "wrong-pass"},
                      headers=svc("restaurant")).status_code == 401
     assert core.post("/internal/auth/verify", json={"email": "ghost@example.org", "password": "whatever1"},

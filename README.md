@@ -207,3 +207,41 @@ with Ctrl + C first, or just open http://127.0.0.1:8004.
 * Settings can be put in a `.env` file: copy `.env.example`.
 * Generated secrets live in `data/.secrets.json` and the database is `data/core.db`. The whole `data/` folder and
   `.env` are git-ignored.
+
+### Signing in
+
+Every portal accepts an **email address or a phone number** with the password. Below the password there is
+**Forgot password?**, and the restaurant and NGO portals have **No account? Create one**.
+Three extras switch on from settings in `.env` (copy `.env.example`). Restart the app after changing `.env`.
+
+**Continue with Google**
+
+1. In [Google Cloud Console](https://console.cloud.google.com/apis/credentials) create an *OAuth client ID* of type
+   **Web application**.
+2. Under *Authorised JavaScript origins* add each portal address, for example `http://localhost:8002`,
+   `http://localhost:8003` and `http://localhost:8001` (Google accepts `localhost`, so open the portals with
+   `localhost` instead of `127.0.0.1` while testing).
+3. Put the client ID in `.env`: `FRS_GOOGLE_CLIENT_ID=...apps.googleusercontent.com`.
+
+A first-time Google user on the restaurant or NGO portal gets a new application under their Google email. The host
+portal only signs in existing host accounts.
+
+**Sign in with a code by SMS**
+
+* For real texts: a Twilio account, then `FRS_SMS_PROVIDER=twilio`, `FRS_TWILIO_ACCOUNT_SID`,
+  `FRS_TWILIO_AUTH_TOKEN` and `FRS_TWILIO_FROM`.
+* For testing on your computer: `FRS_SMS_PROVIDER=console` prints the code in the terminal.
+
+Codes have 6 digits, expire after 5 minutes and allow 5 tries.
+
+**Forgot password (email link)**
+
+Set `FRS_SMTP_HOST`, `FRS_SMTP_PORT`, `FRS_SMTP_USER`, `FRS_SMTP_PASSWORD` and `FRS_SMTP_FROM`. For Gmail use
+`smtp.gmail.com`, port `587` and a Gmail *App password*. Without `FRS_SMTP_HOST` the email is printed in the
+terminal, so the link can still be tested locally. Reset links expire after 30 minutes and work once.
+
+**Only one host email**
+
+Set `FRS_HOST_EMAILS=your-host@gmail.com` in `.env` and the host portal refuses every other address, even with a correct
+password (sessions of other addresses stop working too). Create the host account for that address with
+`python -m scripts.create_host`, and add it as a *test user* in Google Cloud so it can use Continue with Google.

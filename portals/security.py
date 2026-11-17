@@ -12,17 +12,19 @@ from fastapi.responses import JSONResponse
 
 # Pages load Leaflet (unpkg), Chart.js (jsdelivr) and OpenStreetMap tiles; everything else comes from the portal.
 PAGE_CSP = ("default-src 'self'; "
-            "script-src 'self' 'unsafe-inline' https://unpkg.com https://cdn.jsdelivr.net; "
-            "style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; "
+            "script-src 'self' 'unsafe-inline' https://unpkg.com https://cdn.jsdelivr.net https://accounts.google.com; "
+            "style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com https://accounts.google.com; "
+            "frame-src https://accounts.google.com; "
             "img-src 'self' data: blob: https://tile.openstreetmap.org https://*.tile.openstreetmap.org https://unpkg.com https://images.unsplash.com; "
-            "connect-src 'self' https://nominatim.openstreetmap.org; font-src 'self' data: https://fonts.gstatic.com; object-src 'none'; base-uri 'self'; "
+            "connect-src 'self' https://nominatim.openstreetmap.org https://accounts.google.com; font-src 'self' data: https://fonts.gstatic.com; object-src 'none'; base-uri 'self'; "
             "form-action 'self'; frame-ancestors 'none'")
 SECURITY_HEADERS = {
     "X-Content-Type-Options": "nosniff",
     "X-Frame-Options": "DENY",
-    "Referrer-Policy": "same-origin",
+    # Google sign-in needs the site address (never the page path) on its requests, and a popup it can talk back to
+    "Referrer-Policy": "strict-origin-when-cross-origin",
     "Permissions-Policy": "geolocation=(self), camera=(), microphone=()",
-    "Cross-Origin-Opener-Policy": "same-origin",
+    "Cross-Origin-Opener-Policy": "same-origin-allow-popups",
 }
 UNSAFE_METHODS = {"POST", "PUT", "PATCH", "DELETE"}
 

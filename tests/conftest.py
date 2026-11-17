@@ -1,4 +1,6 @@
 import pytest
+
+from shared.messaging import SignInServices
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import sessionmaker
 
@@ -37,7 +39,9 @@ def _core_client_for(core_app, portal):
 @pytest.fixture
 def portals(core_app):
     factories = {"admin": create_admin_app, "restaurant": create_restaurant_app, "ngo": create_ngo_app}
-    return {p: TestClient(f(_core_client_for(core_app, p), JWT[p])) for p, f in factories.items()}
+    # tests never use the real Google / SMS / email settings from a developer's .env
+    return {p: TestClient(f(_core_client_for(core_app, p), JWT[p], signin_services=SignInServices()))
+            for p, f in factories.items()}
 
 
 def svc(portal):

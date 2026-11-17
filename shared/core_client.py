@@ -47,6 +47,14 @@ class CoreClient:
     def verify_credentials(self, email: str, password: str) -> dict:
         return self._request("POST", "/internal/auth/verify", json={"email": email, "password": password})
 
+    def find_for_signin(self, identifier: str, method: str | None = None) -> dict:
+        """{"account": ..., "password_fp": ...} for the account an email/phone belongs to (404 if none)."""
+        return self._request("POST", "/internal/auth/find", json={"identifier": identifier, "method": method})
+
+    def set_password(self, account_id: str, password: str, expected_fp: str) -> dict:
+        return self._request("POST", f"/internal/accounts/{account_id}/password",
+                             json={"password": password, "expected_fp": expected_fp})
+
     def get_account(self, account_id: str) -> dict:
         return self._request("GET", f"/internal/accounts/{account_id}")
 

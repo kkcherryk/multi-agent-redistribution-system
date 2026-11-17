@@ -1,6 +1,9 @@
 """Account operations, shared by the HTTP API and the team's CLI scripts."""
 from __future__ import annotations
 
+import hashlib
+import re
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -44,12 +47,45 @@ def create_account(session: Session, *, role: str, email: str, password: str, di
     return account
 
 
-def authenticate(session: Session, email: str, password: str, *, role: str) -> Account | None:
-    """Return the account if the credentials are valid *and* belong to the given role."""
-    account = get_by_email(session, email)
+def phone_digits(phone: str | None) -> str:
+    return re.sub(r"\D", "", phone or "")
+
+
+def find_for_signin(session: Session, identifier: str, *, role: str) -> Account | None:
+    """Find the account of `role` that an email address or a phone number points to.
+
+    Phone numbers are compared on their last 10 digits, so "+91 98765 43210", "098765 43210" and "9876543210"
+    all match. A number shared by two accounts of the same role signs in neither (it is ambiguous).
+    Erased accounts are never found."""
+    ident = (identifier or "").strip()
+    if "@" in ident:
+        account = get_by_email(session, ident)
+        return account if account is not None and account.role == role and not _erased(account) else None
+    digits = phone_digits(ident)
+    if len(digits) < 10:
+        return None
+    candidates = session.scalars(select(Account).where(Account.role == role, Account.phone.is_not(None)))
+    matches = [a for a in candidates if phone_digits(a.phone)[-10:] == digits[-10:] and not _erased(a)]
+    return matches[0] if len(matches) == 1 else None
+
+
+def _erased(account: Account) -> bool:
+    return account.email.endswith("@erased.invalid")
+
+
+def password_fingerprint(account: Account) -> str:
+    """Changes whenever the password changes; lets a reset link work exactly once."""
+    return hashlib.sha256(account.password_hash.encode("ascii")).hexdigest()[:24]
+
+
+def authenticate(session: Session, identifier: str, password: str, *, role: str) -> Account | None:
+    """Return the account if the credentials are valid *and* belong to the given role.
+
+    `identifier` is an email address or a phone number."""
+    account = find_for_signin(session, identifier, role=role)
     if account is None:
         verify_password(password, _DUMMY_HASH)
         return None
-    if not verify_password(password, account.password_hash) or account.role != role:
+    if not verify_password(password, account.password_hash):
         return None
     return account

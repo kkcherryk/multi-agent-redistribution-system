@@ -3,17 +3,19 @@ frontend, session secret and service key; this module only holds the code they h
 from __future__ import annotations
 
 from pathlib import Path
+from urllib.parse import urlsplit
 
 from fastapi import APIRouter, Depends, FastAPI, File, Form, HTTPException, Query, Request, Response, UploadFile
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from shared.config import PORTAL_ROLE
 from shared.core_client import CoreClient, CoreError, CoreUnavailable
+from shared.messaging import SignInServices
 from shared.security import decode_session_token, issue_session_token
 
-from . import security
+from . import security, signin
 
 COMMON_STATIC = Path(__file__).resolve().parent / "common_static"
 MAX_UPLOAD_BYTES = 5 * 1024 * 1024
@@ -39,7 +41,9 @@ class RegisterIn(BaseModel):
 def create_portal_app(*, portal: str, core: CoreClient, jwt_secret: str, static_dir: Path,
                       allow_registration: bool, cookie_secure: bool = False,
                       session_ttl_seconds: int = 8 * 3600, title: str | None = None,
-                      landing_url: str = "/") -> FastAPI:
+                      landing_url: str = "/", public_url: str | None = None,
+                      signin_services: SignInServices | None = None,
+                      allowed_emails: set[str] | None = None) -> FastAPI:
     role = PORTAL_ROLE[portal]
     cookie_name = f"frs_{portal}_session"
     app = FastAPI(title=title or f"FRS {portal} portal", version="0.1.0")
@@ -51,6 +55,27 @@ def create_portal_app(*, portal: str, core: CoreClient, jwt_secret: str, static_
     login_fails_ip = security.AttemptLimiter(limit=30, window=15 * 60)  # per IP, any email
     signups = security.AttemptLimiter(limit=10, window=60 * 60)         # per IP
     app.state.limiters = (login_fails, login_fails_ip, signups)
+
+    # Only these email addresses may sign in to this portal (used for the host portal). None = no limit.
+    allowed = {e.strip().lower() for e in allowed_emails if e.strip()} if allowed_emails else None
+    app.state.allowed_emails = allowed
+
+    def check_allowed(account: dict) -> None:
+        if allowed is not None and account["email"].lower() not in allowed:
+            raise HTTPException(status_code=403, detail="this portal only accepts the project's host account")
+
+    public_host = urlsplit(public_url).hostname if public_url else None
+
+    @app.middleware("http")
+    async def same_address_as_google_expects(request: Request, call_next):
+        # Google sign-in only accepts the configured address (e.g. http://localhost:8002), not 127.0.0.1:
+        # send anyone who opened a page by IP to the public address instead.
+        if (public_host and request.method == "GET" and request.url.hostname != public_host
+                and request.url.hostname in ("127.0.0.1", "::1") and not request.url.path.startswith("/api/")
+                and request.url.path != "/health"):
+            target = public_url.rstrip("/") + request.url.path + (f"?{request.url.query}" if request.url.query else "")
+            return RedirectResponse(target, status_code=307)
+        return await call_next(request)
 
     @app.middleware("http")
     async def revalidate_pages_and_scripts(request: Request, call_next):
@@ -74,6 +99,7 @@ def create_portal_app(*, portal: str, core: CoreClient, jwt_secret: str, static_
         return JSONResponse(status_code=503, content={"detail": "core data service unavailable"})
 
     def _set_session(response: Response, account: dict) -> None:
+        check_allowed(account)  # every way of signing in passes through here
         token = issue_session_token(jwt_secret, account_id=account["id"], role=account["role"], portal=portal,
                                     ttl_seconds=session_ttl_seconds)
         response.set_cookie(cookie_name, token, httponly=True, samesite="lax", secure=cookie_secure,
@@ -92,14 +118,21 @@ def create_portal_app(*, portal: str, core: CoreClient, jwt_secret: str, static_
             raise
         if account["email"].endswith("@erased.invalid"):  # Phase 10: an erased account is signed out everywhere
             raise HTTPException(status_code=401, detail="not signed in")
+        if allowed is not None and account["email"].lower() not in allowed:  # allow-list changed since sign-in
+            raise HTTPException(status_code=401, detail="not signed in")
         return account
 
     app.state.current_account = current_account
+    services = signin_services or SignInServices.from_env()
+    signin.install(app, core=core, portal=portal, role=role, jwt_secret=jwt_secret, set_session=_set_session,
+                   allow_registration=allow_registration, public_url=public_url, services=services)
     api = APIRouter(prefix="/api")
 
     @api.get("/portal")
     def portal_info():
-        return {"portal": portal, "role": role, "allow_registration": allow_registration, "landing_url": landing_url}
+        return {"portal": portal, "role": role, "allow_registration": allow_registration, "landing_url": landing_url,
+                "google_client_id": services.google_client_id, "code_sign_in": True,
+                "sms_sign_in": services.sms is not None}
 
     @api.post("/login")
     def login(body: LoginIn, request: Request, response: Response):

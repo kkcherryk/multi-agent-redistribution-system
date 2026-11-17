@@ -5,19 +5,64 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Open+Sans:wght@400;600&display=swap">
 <link rel="stylesheet" href="/static/common/portal.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<style>:root{--accent:#1d5f96;--auth-img:url("https://images.unsplash.com/photo-1593113646773-028c64a8f1b8?w=1100&q=70&auto=format&fit=crop");--auth-quote:"Every pickup, every agent, every meal - in one place.";--auth-title:"Host sign-in"}</style>
+<style>:root{--accent:#1d5f96;--btn:#1d5f96;--btn-ink:#fff;--auth-img:url("https://images.unsplash.com/photo-1593113646773-028c64a8f1b8?w=1100&q=70&auto=format&fit=crop");--auth-quote:"Every pickup, every agent, every meal - in one place.";--auth-title:"Host sign-in"}</style>
 </head><body>
-<header><h1>Host Admin Portal</h1><div><button id="logout" class="hidden" type="button">Sign out</button>
+<header><h1><span class="brand-text"><b>Food Redistribution</b><small>Host portal</small></span></h1><div><button id="logout" class="hidden" type="button">Sign out</button>
 <a id="home" href="#">All portals</a></div></header>
 <main>
   <section id="auth" class="panel hidden">
-    <div class="tabs"><button type="button" data-mode="login" class="active">Sign in</button></div>
-    <form id="login-form" autocomplete="on">
-      <label for="l-email">Email</label><input id="l-email" name="email" type="email" required autocomplete="username">
-      <label for="l-pass">Password</label><input id="l-pass" name="password" type="password" required autocomplete="current-password">
-      <button class="primary" type="submit">Sign in</button>
-      <div id="login-msg" class="msg"></div>
-    </form><p class="note">Host accounts are created and managed by the project team.</p>
+    <div class="auth-view" data-view="login">
+      <h2 class="auth-title">Sign in</h2>
+      <p class="auth-sub">to the Host portal</p>
+      <form id="login-form" autocomplete="on">
+        <label for="l-email">Email or phone number</label><input id="l-email" name="email" type="text" required autocomplete="username" spellcheck="false">
+        <div class="label-row"><label for="l-pass">Password</label><a href="#" class="auth-link" data-go="forgot">Forgot password?</a></div>
+        <input id="l-pass" name="password" type="password" required autocomplete="current-password">
+        <button class="primary" type="submit">Sign in</button>
+        <div id="login-msg" class="msg" role="alert"></div>
+      </form>
+      <div class="auth-alt" id="auth-alt" hidden>
+        <div class="auth-or"><span>or</span></div>
+        <div id="google-btn" class="google-btn" hidden></div>
+        <button type="button" class="alt-btn" id="code-open" data-go="code" hidden><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="m3.5 7 8.5 6 8.5-6"/></svg>Email me a one-time code</button>
+      </div>
+      <p class="auth-switch note">Host accounts are created by the project team.</p>
+    </div>
+    <div class="auth-view" data-view="forgot" hidden>
+      <h2 class="auth-title">Reset your password</h2>
+      <p class="auth-sub">Enter the email address of your account. We'll send you a link to choose a new password.</p>
+      <form id="forgot-form">
+        <label for="f-email">Email</label><input id="f-email" name="email" type="email" required autocomplete="email">
+        <button class="primary" type="submit">Send reset link</button>
+        <div id="forgot-msg" class="msg" role="status"></div>
+      </form>
+      <p class="auth-switch"><a href="#" data-go="login">Back to sign in</a></p>
+    </div>
+    <div class="auth-view" data-view="reset" hidden>
+      <h2 class="auth-title">Choose a new password</h2>
+      <p class="auth-sub">You'll be signed in once it's saved.</p>
+      <form id="reset-form">
+        <label for="n-pass">New password</label><input id="n-pass" name="password" type="password" minlength="8" maxlength="72" required autocomplete="new-password">
+        <label for="n-confirm">Confirm new password</label><input id="n-confirm" name="confirm" type="password" minlength="8" maxlength="72" required autocomplete="new-password">
+        <button class="primary" type="submit">Save and sign in</button>
+        <div id="reset-msg" class="msg" role="alert"></div>
+      </form>
+      <p class="auth-switch"><a href="#" data-go="login">Back to sign in</a></p>
+    </div>
+    <div class="auth-view" data-view="code" hidden>
+      <h2 class="auth-title">Sign in with a code</h2>
+      <p class="auth-sub">We'll email a 6-digit code to the address on your account. No password needed.</p>
+      <form id="code-form">
+        <label for="c-phone">Email or phone number</label><input id="c-phone" name="identifier" type="text" required autocomplete="username" spellcheck="false">
+        <div id="code-step" hidden>
+          <label for="c-code">6-digit code</label><input id="c-code" name="code" inputmode="numeric" pattern="\d{6}" maxlength="6" autocomplete="one-time-code">
+          <a href="#" class="auth-link" id="code-resend">Send a new code</a>
+        </div>
+        <button class="primary" type="submit" id="code-submit">Send code</button>
+        <div id="code-msg" class="msg" role="status"></div>
+      </form>
+      <p class="auth-switch"><a href="#" data-go="login">Use your password instead</a></p>
+    </div>
   </section>
   <section id="dashboard" class="hidden">
     <div class="panel"><h2 id="welcome"></h2><dl id="profile"></dl></div>
@@ -94,4 +139,5 @@ window.PORTAL = { title: 'Host Admin Portal' };
 <script src="/static/portal/privacy.js"></script>
 <script src="/static/portal/admin.js"></script>
 <script src="/static/common/portal.js"></script>
+<script src="/static/common/signin.js"></script>
 </body></html>

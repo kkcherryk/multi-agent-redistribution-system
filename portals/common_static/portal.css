@@ -1,5 +1,4 @@
 :root{--bg:#f6f7f4;--fg:#1d2420;--muted:#5d675f;--card:#fff;--line:#dfe3dc;--err:#b42318;--ok:#1a7f37;--accent:#1f6feb;--link:#0b57d0}
-@media (prefers-color-scheme:dark){:root{--bg:#121513;--fg:#e8ece9;--muted:#9aa49d;--card:#1b201d;--line:#2c332e;--err:#f97066;--link:#7cb4ff}}
 a{color:var(--link)}
 *{box-sizing:border-box}
 body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--fg)}
@@ -94,7 +93,6 @@ header>div{display:flex;align-items:center;gap:10px}
 /* ===== Theme (matches the landing page): soft sky backgrounds, deep-blue type, rounded cards, pill buttons ===== */
 :root{--bg:#f3f8fd;--fg:#24313c;--muted:#5f6b75;--card:#fff;--line:#dce7f1;--link:#1d5f96;--ink:#123c5e;
   --head:"Montserrat",system-ui,sans-serif;--body:"Open Sans",system-ui,sans-serif;--shadow:0 14px 34px -20px rgba(18,60,94,.45);--ease:cubic-bezier(.22,.8,.24,1)}
-@media (prefers-color-scheme:dark){:root{--bg:#0f1a24;--fg:#e6edf3;--muted:#9fb0bf;--card:#16222e;--line:#263646;--link:#8cc4f2;--ink:#e6edf3;--shadow:0 14px 34px -20px rgba(0,0,0,.8)}}
 body{font-family:var(--body);background:var(--bg);line-height:1.55}
 h1,h2,h3{font-family:var(--head);color:var(--ink)}
 header{position:sticky;top:0;z-index:500;background:color-mix(in srgb,var(--card) 92%,transparent);backdrop-filter:blur(8px);border-bottom:0;box-shadow:0 6px 24px -16px rgba(18,60,94,.5);padding:12px 24px}
@@ -133,10 +131,7 @@ tr:hover td{background:color-mix(in srgb,var(--accent) 5%,transparent)}
 main:has(#auth:not(.hidden)){max-width:1120px;display:grid;grid-template-columns:1.05fr 1fr;gap:48px;align-items:center;min-height:calc(100vh - 70px);padding-top:24px;padding-bottom:24px}
 main:has(#auth:not(.hidden))::before{content:var(--auth-quote,"Every meal saved can make a difference.");display:flex;align-items:flex-end;padding:36px;min-height:min(620px,78vh);border-radius:28px;color:#fff;font:700 clamp(1.3rem,2.2vw,1.8rem)/1.3 var(--head);
   background:linear-gradient(180deg,transparent 35%,rgba(10,30,50,.82)),var(--auth-img) center/cover;box-shadow:var(--shadow);animation:rise .8s var(--ease) both}
-#auth{padding:36px 32px;max-width:460px;width:100%;justify-self:center}
-#auth::before{content:var(--auth-title,"Welcome back");display:block;font:700 1.7rem var(--head);color:var(--ink)}
-#auth .tabs{margin-top:8px}
-#auth .tabs::before{content:var(--auth-sub,"");display:none}
+#auth{padding:40px 40px 34px;max-width:440px;width:100%;justify-self:center}
 @media (max-width:860px){main:has(#auth:not(.hidden)){grid-template-columns:1fr;gap:20px;min-height:0}main:has(#auth:not(.hidden))::before{min-height:220px;padding:24px}}
 @media (max-width:560px){header{padding:10px 16px}header h1{font-size:.95rem}main{padding:24px 16px 48px}.panel{padding:22px 18px}}
 @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
@@ -158,3 +153,44 @@ textarea#pf-address{resize:vertical}
 /* tab bar: room for every tab on desktop (wraps if it must), one scrolling line on phones */
 main:has(.section-tabs){max-width:1180px}
 @media (min-width:700px){.section-tabs{flex-wrap:wrap;overflow:visible}.section-tabs button{padding:12px 12px}}
+
+/* ===== Same look as the main website: light palette, brand header, its button colours ===== */
+:root{color-scheme:light;--bg:#f4f9fe;--fg:#2b3640;--muted:#5f6b75;--card:#fff;--line:#dbe6f0;--link:#1d5f96;--ink:#123c5e;
+  --brand:#1d5f96;--brand-green:#3a9a37;--shadow:0 18px 40px -22px rgba(18,60,94,.35)}
+body{background:linear-gradient(180deg,#e8f3fd 0,#f4f9fe 320px) no-repeat,#f4f9fe}
+header{background:rgba(255,255,255,.96);box-shadow:0 6px 24px -14px rgba(18,60,94,.4)}
+header h1{gap:10px}
+header h1::before{width:40px;height:40px}
+.brand-text{display:flex;flex-direction:column;line-height:1.1}
+.brand-text b{font:800 1.06rem var(--head);color:var(--brand)}
+.brand-text small{font:600 .68rem var(--body);color:var(--brand-green);letter-spacing:.06em;text-transform:uppercase;margin-top:2px}
+.panel h2{color:var(--brand)}
+h3{color:var(--ink)}
+/* filled buttons use the main site's colours: yellow (restaurant), green (NGO), blue (host) */
+button.primary,button.active,.tabs button.active{background:var(--btn,var(--accent));border-color:var(--btn,var(--accent));color:var(--btn-ink,#fff)}
+button.primary:not(:disabled):hover{filter:brightness(.96)}
+.section-tabs button.active{background:transparent;border-color:transparent;color:var(--accent)}
+.loc-btn{background:#eef5fc;color:var(--brand)}
+
+/* ===== sign-in card: one clear path, quiet alternatives ===== */
+#auth .auth-title{margin:0;font:700 1.6rem var(--head);color:var(--ink)}
+#auth .auth-sub{margin:4px 0 22px;color:var(--muted);font-size:.95rem}
+#auth label{margin-top:14px}
+#auth form>label:first-child{margin-top:0}
+.label-row{display:flex;justify-content:space-between;align-items:baseline;margin-top:14px}
+.label-row label{margin:0}
+.auth-link{font-size:.85rem;font-weight:600;color:var(--link);text-decoration:none}
+.auth-link:hover{text-decoration:underline}
+.field-hint{margin:6px 0 0;color:var(--muted);font-size:.8rem}
+#auth button.primary{margin-top:22px}
+.auth-or{display:flex;align-items:center;gap:14px;margin:22px 0 16px;color:var(--muted);font-size:.85rem}
+.auth-or::before,.auth-or::after{content:"";flex:1;height:1px;background:var(--line)}
+.google-btn{display:flex;justify-content:center;min-height:44px}
+.alt-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;margin-top:10px;padding:10px 16px;background:var(--card);border:1px solid #dadce0;color:#3c4043;font:500 .9rem var(--body)}
+.alt-btn:not(:disabled):hover{background:#f6f9fc;transform:none;box-shadow:none}
+.alt-btn .ic{color:var(--muted)}
+.auth-switch{margin:24px 0 0;padding-top:18px;border-top:1px solid var(--line);font-size:.92rem;color:var(--muted)}
+.auth-switch a{color:var(--link);font-weight:600;text-decoration:none}.auth-switch a:hover{text-decoration:underline}
+#code-step{margin-top:2px}
+#code-step .auth-link{display:inline-block;margin-top:8px}
+button.is-busy{opacity:.7;cursor:progress}

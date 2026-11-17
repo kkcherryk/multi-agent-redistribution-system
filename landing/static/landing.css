@@ -284,3 +284,16 @@ section{position:relative}
 .num i{color:#fff;font-size:1.1rem}
 .journey i{color:var(--c);font-size:1.3rem}
 .impact-empty .ie-icon{display:grid;place-items:center;width:64px;height:64px;margin:0 auto;border-radius:50%;background:#fff;color:var(--green-d);font-size:1.9rem;box-shadow:0 10px 24px -14px rgba(58,154,55,.8)}
+/* impact: one rich panel in the site's blue -> teal, white numbers, each stat with its own accent colour */
+.stats{position:relative;overflow:hidden;border:0;border-radius:28px;background:linear-gradient(120deg,#123c5e 0%,#1d5f96 55%,#0b93b8 100%);box-shadow:0 30px 60px -32px rgba(18,60,94,.7)}
+.stats::before{content:"";position:absolute;width:420px;height:420px;right:-120px;top:-200px;border-radius:50%;background:radial-gradient(circle,rgba(76,182,72,.35),transparent 70%);pointer-events:none}
+.stats::after{content:"";position:absolute;width:360px;height:360px;left:-140px;bottom:-220px;border-radius:50%;background:radial-gradient(circle,rgba(252,213,53,.22),transparent 70%);pointer-events:none}
+.stat{position:relative;z-index:1;padding:40px 30px;border-left:1px solid rgba(255,255,255,.14)}
+.stat i{display:grid;place-items:center;width:46px;height:46px;border-radius:14px;margin-bottom:20px;font-size:1.3rem;color:var(--c);background:color-mix(in srgb,var(--c) 18%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 40%,transparent)}
+.stat b{color:#fff}
+.stat span{color:rgba(255,255,255,.9)}
+.stat-extra{color:rgba(255,255,255,.65)}
+.stat::after{content:"";position:absolute;left:30px;bottom:28px;width:28px;height:3px;border-radius:3px;background:var(--c)}
+.s-meals{--c:#fcd535}.s-done{--c:#7ad66f}.s-rest{--c:#ffb35c}.s-ngo{--c:#7fd8ef}
+.stats[aria-busy="true"] .stat b{background:linear-gradient(90deg,rgba(255,255,255,.12) 25%,rgba(255,255,255,.25) 50%,rgba(255,255,255,.12) 75%) 0 0/200% 100%}
+@media (max-width:1020px){.stat:nth-child(n+3){border-top:1px solid rgba(255,255,255,.14)}}

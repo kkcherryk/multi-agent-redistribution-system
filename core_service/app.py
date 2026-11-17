@@ -28,8 +28,9 @@ from .agents.ngo_agents import NgoAgents
 from .agents.runtime import AgentRuntime
 from .db import make_engine
 from .models import Account, AccountStatus, Base, Document, Event, FoodListing, NgoProfile
-from .schemas import (PROFILE_SCHEMAS, AccountOut, AvailabilityIn, CredentialsIn, EventOut, RegisterIn,
-                      ReviewIn)
+from .schemas import (PROFILE_SCHEMAS, AccountOut, AvailabilityIn, CredentialsIn, EventOut, FindIn,
+                      PasswordSetIn, RegisterIn, ReviewIn)
+from shared.security import hash_password
 
 # Portals whose users may self-register. Host accounts are created by the project team only (scripts/create_host.py).
 SELF_REGISTER_PORTALS = {"restaurant", "ngo"}
@@ -139,10 +140,42 @@ def create_core_app(db_url: str, service_keys: dict[str, str], upload_dir: Path 
     def verify_credentials(body: CredentialsIn, portal: str = Depends(caller_portal), db: Session = Depends(get_db)):
         account = accounts.authenticate(db, body.email, body.password, role=PORTAL_ROLE[portal])
         if account is None:
-            accounts.record_event(db, "auth.failed", portal=portal, email_domain=body.email.rsplit("@", 1)[-1][:60])
+            # never log the address or number itself: just its domain, or that it was a phone number
+            where = body.email.rsplit("@", 1)[-1][:60] if "@" in body.email else "phone"
+            accounts.record_event(db, "auth.failed", portal=portal, email_domain=where)
             db.commit()
-            raise HTTPException(status_code=401, detail="invalid email or password")
+            raise HTTPException(status_code=401, detail="invalid email, phone number or password")
         accounts.record_event(db, "auth.login", portal=portal, actor_id=account.id, subject_id=account.id)
+        db.commit()
+        return account_out(account, ngo_profile_of(db, account))
+
+    @app.post("/internal/auth/find")
+    def find_for_signin(body: FindIn, portal: str = Depends(caller_portal), db: Session = Depends(get_db)):
+        """For sign-in methods the portal has already proven (Google, SMS code) and for password resets:
+        the account of this portal's role that an email or phone number belongs to. With `method`, the
+        sign-in is recorded."""
+        account = accounts.find_for_signin(db, body.identifier, role=PORTAL_ROLE[portal])
+        if account is None:
+            raise HTTPException(status_code=404, detail="no account")
+        if body.method:
+            accounts.record_event(db, "auth.login", portal=portal, actor_id=account.id, subject_id=account.id,
+                                  method=body.method)
+            db.commit()
+        return {"account": account_out(account, ngo_profile_of(db, account)),
+                "password_fp": accounts.password_fingerprint(account)}
+
+    @app.post("/internal/accounts/{account_id}/password")
+    def set_password(account_id: str, body: PasswordSetIn, portal: str = Depends(caller_portal),
+                     db: Session = Depends(get_db)):
+        """Set a new password from a reset link. `expected_fp` must match the current password, so each
+        link works once and stops working if the password was changed some other way."""
+        account = visible_account(db, account_id, portal)
+        if account.role != PORTAL_ROLE[portal] or account.email.endswith("@erased.invalid"):
+            raise HTTPException(status_code=404, detail="account not found")
+        if not secrets.compare_digest(accounts.password_fingerprint(account), body.expected_fp):
+            raise HTTPException(status_code=409, detail="this reset link has already been used")
+        account.password_hash = hash_password(body.password)
+        accounts.record_event(db, "auth.password_reset", portal=portal, actor_id=account.id, subject_id=account.id)
         db.commit()
         return account_out(account, ngo_profile_of(db, account))
 
