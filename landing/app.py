@@ -35,6 +35,15 @@ def create_landing_app(portal_urls: dict[str, str], fetch_impact: Callable[[], d
     app = FastAPI(title="FRS landing")
     from portals import security
     security.install(app)
+
+    @app.middleware("http")
+    async def revalidate_page_and_assets(request, call_next):
+        # Without this, browsers keep an old landing.css/js after an update and the new page looks broken.
+        # "no-cache" still lets them reuse unchanged files after a quick check (304 Not Modified).
+        response = await call_next(request)
+        if request.url.path == "/" or request.url.path.startswith("/static/"):
+            response.headers["Cache-Control"] = "no-cache"
+        return response
     page = (STATIC / "index.html").read_text(encoding="utf-8")
     for key, token in (("restaurant", "RESTAURANT_URL"), ("ngo", "NGO_URL")):  # the host portal is never linked publicly
         page = page.replace("{{" + token + "}}", html.escape(portal_urls[key]))

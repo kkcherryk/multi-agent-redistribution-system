@@ -114,3 +114,10 @@ def test_pages_and_scripts_are_revalidated(portals):
     for client in portals.values():
         assert client.get("/").headers["cache-control"] == "no-cache"
         assert client.get("/static/common/portal.js").headers["cache-control"] == "no-cache"
+
+
+def test_landing_page_and_assets_are_revalidated():
+    # After an update the browser must fetch the new landing.css/js, or the new page renders with old styles.
+    client = TestClient(create_landing_app({"admin": "a", "restaurant": "r", "ngo": "n"}))
+    for path in ("/", "/static/landing.css", "/static/landing.js"):
+        assert client.get(path).headers["cache-control"] == "no-cache", path
