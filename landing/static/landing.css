@@ -178,18 +178,27 @@ section{position:relative}
 .impact-empty h3{font-size:1.6rem;margin:10px 0 8px;color:var(--blue-ink)}.impact-empty p{color:var(--muted);margin:0 0 22px}
 .impact-error{text-align:center;color:var(--muted);margin-top:40px}
 
-/* orbit */
-.orbit-sec{padding:60px 0 110px;background:linear-gradient(#fff,#f7f8fb);overflow:hidden;text-align:center}
-.orbit{--R:300px;position:relative;width:calc(var(--R)*2 + 180px);height:calc(var(--R)*2 + 180px);max-width:100%;margin:0 auto}
+/* orbit: photo circle on the left, the journey on the right */
+.orbit-sec{padding:100px 0 110px;background:linear-gradient(#fff,#f7f8fb);overflow:hidden}
+.orbit-in{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:40px;align-items:center}
+.orbit{--R:min(17vw,215px);--T:min(9.8vw,124px);position:relative;width:calc(var(--R)*2 + var(--T) + 30px);aspect-ratio:1;max-width:100%;margin:0 auto}
 .ring{position:absolute;inset:0;animation:spin 70s linear infinite}
-.ring figure{position:absolute;left:50%;top:50%;width:150px;height:150px;margin:-75px 0 0 -75px;transform:rotate(var(--a)) translateY(calc(var(--R)*-1)) rotate(-14deg)}
-.ring img{width:100%;height:100%;object-fit:cover;border-radius:34px;box-shadow:0 20px 34px -16px rgba(18,40,70,.55);transition:transform .4s var(--ease)}
-.ring figure:hover img{transform:scale(1.12)}
-.orbit:hover .ring{animation-play-state:paused}
-.orbit-center{position:absolute;left:50%;top:50%;width:calc(var(--R)*1.05);aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;overflow:hidden;border:10px solid #fff;box-shadow:0 30px 60px -30px rgba(18,40,70,.6)}
+.ring figure{position:absolute;left:50%;top:50%;margin:0;width:var(--T);height:var(--T);translate:-50% -50%;transform:rotate(var(--a)) translateY(calc(var(--R)*-1)) rotate(-14deg)}
+/* each photo turns back against the ring, so pictures stay upright while they travel */
+.ring img{width:100%;height:100%;object-fit:cover;border-radius:30px;box-shadow:0 20px 34px -16px rgba(18,40,70,.55);animation:counter 70s linear infinite;transition:scale .4s var(--ease)}
+@keyframes counter{from{transform:rotate(calc(var(--a) * -1 + 14deg))}to{transform:rotate(calc(var(--a) * -1 + 14deg - 360deg))}}
+.ring figure:hover img{scale:1.12}
+.orbit:hover .ring,.orbit:hover .ring img{animation-play-state:paused}
+.orbit-center{position:absolute;left:50%;top:50%;width:calc(var(--R)*1.1);aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;overflow:hidden;border:10px solid #fff;box-shadow:0 30px 60px -30px rgba(18,40,70,.6)}
 .orbit-center img{width:100%;height:100%;object-fit:cover}
-.orbit-quote{font:600 clamp(1.3rem,2.6vw,2rem) var(--head);color:var(--blue-ink);margin:30px auto 0;padding:0 24px;max-width:900px}
-.orbit-quote span{color:var(--green-d);font-weight:500}
+.orbit-text h2{font-size:clamp(2rem,3.6vw,3rem);font-weight:600;color:var(--blue)}
+.orbit-lead{color:var(--muted);font-size:1.08rem;margin:16px 0 24px}
+.journey{list-style:none;margin:0 0 26px;padding:0;display:grid;gap:14px}
+.journey li{display:flex;gap:14px;align-items:flex-start}
+.journey i{flex:none;display:grid;place-items:center;width:44px;height:44px;border-radius:14px;font-style:normal;font-size:1.25rem;background:color-mix(in srgb,var(--c) 14%,#fff);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 30%,transparent)}
+.journey span{color:var(--muted);line-height:1.5}.journey b{display:block;color:var(--blue-ink);font-family:var(--head)}
+.orbit-quote{margin:0 0 26px;padding:16px 20px;border-left:4px solid var(--green);border-radius:0 14px 14px 0;background:#fff;box-shadow:0 10px 26px -20px rgba(18,60,94,.5);font:600 1.08rem/1.45 var(--head);color:var(--blue-ink)}
+.orbit-quote span{color:var(--green-d)}
 
 /* cta split */
 .cta-split{display:grid;grid-template-columns:1fr 1fr;min-height:420px}
@@ -245,12 +254,11 @@ section{position:relative}
   .foot-in{grid-template-columns:1fr 1fr}
 }
 @media (max-width:820px){
-  .story-row,.about-in,.join-grid,.agents-in,.cta-split{grid-template-columns:1fr}
+  .story-row,.about-in,.join-grid,.agents-in,.cta-split,.orbit-in{grid-template-columns:1fr}
   .story-row{gap:28px;margin-top:64px}.story-row.flip .story-img{order:0}
   .about-art{min-height:380px}
   .hero-wash{background:linear-gradient(180deg,rgba(250,244,232,.94) 0%,rgba(250,244,232,.86) 60%,rgba(250,244,232,.55))}
-  .orbit{--R:min(34vw,230px)}
-  .ring figure{width:96px;height:96px;margin:-48px 0 0 -48px}.ring img{border-radius:24px}
+  .orbit{--R:min(30vw,190px);--T:min(19vw,104px)}.ring img{border-radius:24px}
   .cta-split figure{height:280px}
   .cta-panel{padding:48px 24px}
 }
@@ -261,8 +269,7 @@ section{position:relative}
   .vm{grid-template-columns:1fr}
   .role-body{padding:26px 22px 30px}
   .stats{gap:12px}.stat{padding:24px 10px}
-  .orbit{--R:36vw}
-  .ring figure{width:70px;height:70px;margin:-35px 0 0 -35px}.ring img{border-radius:18px}
+  .orbit{--R:33vw;--T:19vw}.ring img{border-radius:18px}
   .scroll-cue{display:none}
   .foot-in{grid-template-columns:1fr}
   .brand-text small{display:none}
