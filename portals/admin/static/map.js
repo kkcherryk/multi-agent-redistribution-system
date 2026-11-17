@@ -58,11 +58,11 @@
     const dl = ui.el("dl");
     const p = agentPoint(a);
     const where = p.kind === "live" ? `Live (${ago(a.location.age_seconds)})`
-      : p.kind === "last" ? `Last known, ${ago(a.location.age_seconds)} — not live`
-      : "Not sharing location — shown at NGO base";
-    const rows = [["Phone", a.phone || "—"], ["Location", where], ["NGO base", a.base.address],
-                  ["Trust score", a.trust ? `${Math.round(a.trust.score)} / 100 (${a.trust.confidence} confidence)` : "—"],
-                  ["Current pickup", a.current_pickup ? `${a.current_pickup.food_type} — ${STEP[a.current_pickup.step] || a.current_pickup.step}` : "None"],
+      : p.kind === "last" ? `Last known, ${ago(a.location.age_seconds)} - not live`
+      : "Not sharing location - shown at NGO base";
+    const rows = [["Phone", a.phone || "-"], ["Location", where], ["NGO base", a.base.address],
+                  ["Trust score", a.trust ? `${Math.round(a.trust.score)} / 100 (${a.trust.confidence} confidence)` : "-"],
+                  ["Current pickup", a.current_pickup ? `${a.current_pickup.food_type} - ${STEP[a.current_pickup.step] || a.current_pickup.step}` : "None"],
                   ["Deliveries", String(a.stats.deliveries)], ["Stored", String(a.stats.stored)], ["Disposed", String(a.stats.disposed)]];
     for (const [k, v] of rows) dl.append(ui.el("dt", {}, k), ui.el("dd", {}, v));
     panel.append(dl);
@@ -104,7 +104,7 @@
       bounds.push(pos);
       if (l.trail.length > 1) L.polyline(l.trail, { color: COLORS[l.status], weight: 3, dashArray: "6 6" }).addTo(layer);
       L.circleMarker(pos, { radius: 6, color: "#fff", weight: 1, fillColor: COLORS[l.status], fillOpacity: 1 })
-        .bindPopup(`<strong>${esc(l.food_type)}</strong> — ${l.quantity} ${esc(l.unit)}<br>${esc(l.restaurant_name)}<br>` +
+        .bindPopup(`<strong>${esc(l.food_type)}</strong> - ${l.quantity} ${esc(l.unit)}<br>${esc(l.restaurant_name)}<br>` +
                    `Status: ${esc(l.status)}${l.step ? " (" + esc(STEP[l.step] || l.step) + ")" : ""}<br>Best before ${fmtTime(l.expires_at)}`)
         .addTo(layer);
     });

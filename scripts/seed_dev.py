@@ -1,6 +1,6 @@
 """Seed local development accounts (one host, one restaurant, one NGO) with random passwords.
 
-The generated credentials are written to data/dev_credentials.json (git-ignored) — open that file to sign in.
+The generated credentials are written to data/dev_credentials.json (git-ignored) - open that file to sign in.
 Re-running keeps existing accounts.
 """
 from __future__ import annotations

@@ -122,7 +122,7 @@ def build_router(*, get_db, caller_portal, require_admin, runtime: AgentRuntime,
                                         .order_by(BackupRequest.created_at))]
             escalations.append({"listing_id": esc.listing_id, "stage": esc.stage, "reason": esc.reason,
                                 "updated_at": esc.updated_at,
-                                "food": f"{listing.food_type} — {listing.quantity:g} {listing.unit}" if listing else None,
+                                "food": f"{listing.food_type} - {listing.quantity:g} {listing.unit}" if listing else None,
                                 "restaurant": rest.display_name if rest else None,
                                 "listing_status": listing.status if listing else None, "backup_requests": reqs})
         messages = [{"id": m.id, "sender": m.sender, "recipient": m.recipient, "topic": m.topic,

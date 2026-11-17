@@ -52,7 +52,7 @@
     const sel = ui.el("select", { "aria-label": "Account" });
     accounts.filter((a) => a.role !== "host").forEach((a) => {
       const erased = a.email.endsWith("@erased.invalid");
-      sel.append(ui.el("option", { value: a.id }, `${a.display_name} (${a.role})${erased ? " — erased" : " — " + a.email}`));
+      sel.append(ui.el("option", { value: a.id }, `${a.display_name} (${a.role})${erased ? " - erased" : " - " + a.email}`));
     });
     const row = ui.el("div", { class: "row", style: "margin-top:8px" });
     const exp = ui.el("button", { type: "button" }, "Export data");

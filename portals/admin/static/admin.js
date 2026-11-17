@@ -10,12 +10,12 @@
 
   function td(content) {
     const cell = ui.el("td");
-    if (content instanceof Node) cell.append(content); else cell.textContent = content ?? "—";
+    if (content instanceof Node) cell.append(content); else cell.textContent = content ?? "-";
     return cell;
   }
 
   function mapLink(p) {
-    if (!p) return "—";
+    if (!p) return "-";
     const url = `https://www.openstreetmap.org/?mlat=${encodeURIComponent(p.latitude)}&mlon=${encodeURIComponent(p.longitude)}#map=17/${p.latitude}/${p.longitude}`;
     return ui.el("a", { href: url, target: "_blank", rel: "noopener" }, `${p.latitude.toFixed(4)}, ${p.longitude.toFixed(4)}`);
   }
@@ -60,7 +60,7 @@
       hist.append(ui.el("summary", {}, `Review history (${item.reviews.length})`));
       for (const r of item.reviews) {
         hist.append(ui.el("div", { class: "note" },
-          `${new Date(r.created_at).toLocaleString()} — ${r.decision}: ${r.from_status} → ${r.to_status}${r.note ? " — " + r.note : ""}`));
+          `${new Date(r.created_at).toLocaleString()} - ${r.decision}: ${r.from_status} → ${r.to_status}${r.note ? " - " + r.note : ""}`));
       }
       card.append(hist);
     }
@@ -143,7 +143,7 @@
       parts.push(h.kind === "delivered" || h.kind === "distributed" ? `${h.kind} ${h.quantity} → ${h.recipient ? h.recipient.name : "?"}`
         : h.kind === "disposed" ? `disposed (${h.notes})` : `${h.kind} ${h.quantity}`);
     }
-    return parts.join("; ") || "—";
+    return parts.join("; ") || "-";
   }
 
   async function loadStorage() {
@@ -152,7 +152,7 @@
     tb.replaceChildren();
     for (const s of rows) {
       const tr = ui.el("tr");
-      const st = s.expired ? "expired — dispose" : s.status.replace("_", " ");
+      const st = s.expired ? "expired - dispose" : s.status.replace("_", " ");
       tr.append(td(s.ngo_name), td(s.food_type), td(`${s.remaining_quantity} / ${s.stored_quantity} ${s.unit}`),
                 td(s.location), td(new Date(s.expires_at).toLocaleString([], { dateStyle: "short", timeStyle: "short" })), td(st));
       tb.append(tr);
@@ -175,7 +175,7 @@
       const a = l.assignment;
       tr.append(td(fmt(l.created_at)), td(l.restaurant.name), td(food), td(`${l.quantity} ${l.unit}`),
                 td(fmt(l.expires_at)), td(ui.statusChip(l.status)), td(String(l.notified_agents)),
-                td(a ? `${a.representative_name} (${a.ngo_name})` : "—"), td(outcome(l)));
+                td(a ? `${a.representative_name} (${a.ngo_name})` : "-"), td(outcome(l)));
       const actionCell = ui.el("td");
       if (l.status === "active") {
         const esc = ui.el("button", { type: "button", class: "small", title: "Ask a backup collector now" }, "Escalate");

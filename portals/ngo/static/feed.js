@@ -47,7 +47,7 @@
       }
       const available = acc.badges && acc.badges.availability && acc.badges.availability.label === "Available";
       sub.textContent = `Food within ${data.radius_km} km of your NGO, nearest first. ` +
-        (!available ? "You are Unavailable — switch to Available below to accept pickups."
+        (!available ? "You are Unavailable - switch to Available below to accept pickups."
           : busy ? "Finish your current pickup before accepting another one."
           : "Updates every 15 seconds.");
 
@@ -63,7 +63,7 @@
         if (it.new) h.append(ui.el("span", { class: "pill new" }, "NEW"));
         if (it.recommended) h.append(ui.el("span", { class: "pill recommended", title: it.recommended.reason },
           `★ Recommended for you · ~${Math.round(it.recommended.eta_minutes)} min`));
-        h.append(`${it.food_type} — ${it.quantity} ${it.unit}`);
+        h.append(`${it.food_type} - ${it.quantity} ${it.unit}`);
         b.append(h);
         b.append(ui.el("span", { class: "pill " + it.dietary }, LABEL[it.dietary]), ui.el("span", { class: "pill" }, it.condition),
                  ui.el("span", { class: "pill" }, `${it.distance_km} km`), ui.el("span", { class: "pill" }, timeLeft(it.expires_at)));

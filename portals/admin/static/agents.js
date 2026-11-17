@@ -1,11 +1,11 @@
 // Host portal, Phase 6: watch the backend agents, food at risk, backup requests and the agent message log.
 (function () {
   const $ = (id) => document.getElementById(id);
-  const fmt = (iso) => (iso ? new Date(iso).toLocaleString([], { dateStyle: "short", timeStyle: "short" }) : "—");
+  const fmt = (iso) => (iso ? new Date(iso).toLocaleString([], { dateStyle: "short", timeStyle: "short" }) : "-");
   const STAGE = { widened: "Wider alert sent", backup_requested: "Backup collector asked", needs_host: "Needs host attention",
                   resolved: "Resolved" };
   const TOPIC = {
-    food_posted: () => "Food posted — asked logistics to start a negotiation round",
+    food_posted: () => "Food posted - asked logistics to start a negotiation round",
     call_for_proposals: () => "Call for proposals",
     propose: (p) => `Offer: ~${Math.round(p.eta_minutes)} min, trust ${Math.round(p.trust)} (${p.trust_confidence})`,
     refuse: (p) => `No offer: ${p.reason}`,
@@ -14,7 +14,7 @@
       ((p.refusals || []).length ? ` · ${p.refusals.length} declined to bid` : ""),
     collectors_ranked: (p) => `Ranked collectors: ${(p.ranking || []).map((r) => `${r.name} ~${Math.round(r.eta_minutes)} min`).join(", ") || "none available"}`,
     recommended_pickup: (p) => `Recommended this food to an agent (rank ${p.rank}, ~${Math.round(p.eta_minutes)} min)`,
-    food_at_risk: (p) => `Food at risk (${(p.reasons || []).join("; ")}) — alerted ${p.newly_alerted} more agent(s) within ${p.radius_km} km`,
+    food_at_risk: (p) => `Food at risk (${(p.reasons || []).join("; ")}) - alerted ${p.newly_alerted} more agent(s) within ${p.radius_km} km`,
     rank_backup: () => "Asked logistics to rank backup collectors",
     backup_request: (p) => `Offered backup collection (~${Math.round(p.eta_minutes)} min away)`,
     backup_requested: (p) => `Backup collector asked: ${p.reason}`,
@@ -26,7 +26,7 @@
 
   function td(ui, content) {
     const c = ui.el("td");
-    if (content instanceof Node) c.append(content); else c.textContent = content ?? "—";
+    if (content instanceof Node) c.append(content); else c.textContent = content ?? "-";
     return c;
   }
 
@@ -38,7 +38,7 @@
       const card = ui.el("div", { class: "card" });
       card.append(ui.el("strong", {}, { logistics: "Logistics agent", backup: "Backup collection agent", "ngo-agents": "NGO agents" }[a.name] || a.name));
       card.append(ui.el("div", { class: "meta" }, a.description));
-      card.append(ui.el("div", { class: "meta" }, `Last run: ${fmt(a.last_tick)}` + (a.last_error ? ` — error: ${a.last_error}` : "")));
+      card.append(ui.el("div", { class: "meta" }, `Last run: ${fmt(a.last_tick)}` + (a.last_error ? ` - error: ${a.last_error}` : "")));
       status.append(card);
     }
     status.append(ui.el("p", { class: "note" }, `${data.backup_volunteers} NGO(s) offer backup collections.`));
@@ -47,7 +47,7 @@
     tb.replaceChildren();
     for (const e of data.escalations) {
       const tr = ui.el("tr");
-      const reqs = e.backup_requests.map((q) => `${q.volunteer}: ${q.status}`).join(", ") || "—";
+      const reqs = e.backup_requests.map((q) => `${q.volunteer}: ${q.status}`).join(", ") || "-";
       tr.append(td(ui, fmt(e.updated_at)), td(ui, e.restaurant), td(ui, e.food), td(ui, STAGE[e.stage] || e.stage),
                 td(ui, e.reason), td(ui, reqs), td(ui, ui.statusChip(e.listing_status)));
       tb.append(tr);
@@ -60,7 +60,7 @@
       const text = (TOPIC[m.topic] || (() => m.topic))(m.payload || {});
       const who = (x) => x === "host" ? "host" : x.startsWith("ngo-agent:") ? "NGO agent" : x.startsWith("restaurant-agent:") ? "restaurant agent" : (x.length === 32 ? "an NGO agent" : x);
       const to = who(m.recipient);
-      log.append(ui.el("div", { class: "agent-msg" }, `${fmt(m.created_at)} — ${who(m.sender)} → ${to}: ${text}`));
+      log.append(ui.el("div", { class: "agent-msg" }, `${fmt(m.created_at)} - ${who(m.sender)} → ${to}: ${text}`));
     }
     if (!data.messages.length) log.append(ui.el("p", { class: "note" }, "No agent activity yet."));
   }

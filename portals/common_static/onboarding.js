@@ -70,7 +70,7 @@
     const addrWrap = ui.el("div", { style: "grid-column:1/-1" });
     addrWrap.append(ui.el("label", { for: "pf-address" }, label));
     const addr = ui.el("textarea", { id: "pf-address", name: "address", rows: "2", maxlength: "300",
-      placeholder: "Filled in from the pin — you can edit it" });
+      placeholder: "Filled in from the pin - you can edit it" });
     addr.value = addr0 || "";
     addrWrap.append(addr);
     const nearWrap = ui.el("div", { style: "grid-column:1/-1" });
@@ -87,7 +87,7 @@
     const setStatus = (t) => { status.textContent = t; };
     hint.textContent = !editable ? (pos ? "Your location is saved." : "")
       : pos ? "Your location is saved. Use your current location again to change it."
-      : "Use your current location — a map opens so you can check the pin and adjust it.";
+      : "Use your current location - a map opens so you can check the pin and adjust it.";
 
     function place(latlng, fromUser) {
       pos = [Number(latlng[0].toFixed(6)), Number(latlng[1].toFixed(6))];
@@ -104,9 +104,9 @@
         try {
           const text = await lookupAddress(pos[0], pos[1]);
           if (seq !== lookupSeq) return;
-          if (text) { addr.value = text; setStatus("Address filled in — check it and add a landmark if it helps."); }
-          else setStatus("Couldn't find an address here — please type it.");
-        } catch { if (seq === lookupSeq) setStatus("Couldn't look up the address — please type it."); }
+          if (text) { addr.value = text; setStatus("Address filled in - check it and add a landmark if it helps."); }
+          else setStatus("Couldn't find an address here - please type it.");
+        } catch { if (seq === lookupSeq) setStatus("Couldn't look up the address - please type it."); }
       }, 700);  // wait until the pin settles; Nominatim allows about one lookup a second
     }
 
@@ -133,7 +133,7 @@
           const ll = [p.coords.latitude, p.coords.longitude];
           if (map) map.setView(ll, 17);
           place(ll, true);
-          if (!map) setStatus("Location saved from your device — please type the address.");
+          if (!map) setStatus("Location saved from your device - please type the address.");
         },
         () => { setStatus(""); fail(msg, new Error("Could not read your location. Tap your place on the map instead.")); },
         { enableHighAccuracy: true, timeout: 15000 });

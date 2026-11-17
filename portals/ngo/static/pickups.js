@@ -32,7 +32,7 @@
     const box = ui.el("div", { class: "meta" });
     if (it.inspection) {
       const i = it.inspection;
-      box.append(ui.el("div", {}, `Food check: ${i.outcome} — ${i.actual_quantity} of ${i.listed_quantity} ${it.unit}, ${i.observed_condition}` +
+      box.append(ui.el("div", {}, `Food check: ${i.outcome} - ${i.actual_quantity} of ${i.listed_quantity} ${it.unit}, ${i.observed_condition}` +
         (i.notes ? ` (${i.notes})` : "")));
     }
     for (const h of it.handovers || []) {
@@ -41,7 +41,7 @@
                      stored: `Stored ${h.quantity} ${it.unit} at the NGO`,
                      distributed: `Gave ${h.quantity} ${it.unit} from storage to ${to}, received by ${h.received_by}`,
                      disposed: `Disposed: ${h.notes}` }[h.kind];
-      box.append(ui.el("div", {}, `${fmt(h.created_at)} — ${text}`));
+      box.append(ui.el("div", {}, `${fmt(h.created_at)} - ${text}`));
     }
     return box;
   }
@@ -82,7 +82,7 @@
       nw.style.gridColumn = "1/-1";
       g.append(qw, cw, nw);
       const r2 = ui.el("div", { class: "row" });
-      const ok = ui.el("button", { type: "button", class: "primary", style: "width:auto;margin-top:0" }, "Food checked — collect");
+      const ok = ui.el("button", { type: "button", class: "primary", style: "width:auto;margin-top:0" }, "Food checked - collect");
       const no = ui.el("button", { type: "button", class: "danger" }, "Reject food");
       ok.addEventListener("click", run(() => post(ui, `${base}/inspection`, { decision: "collect", actual_quantity: Number(qty.value), observed_condition: cond.value, notes: notes.value || null })));
       no.addEventListener("click", run(() => post(ui, `${base}/inspection`, { decision: "reject", actual_quantity: Number(qty.value) || 0, observed_condition: cond.value, notes: notes.value || null })));
@@ -141,7 +141,7 @@
     c.append(ui.el("img", { src: `/api/listings/${it.id}/photo`, alt: it.food_type }));
     const b = ui.el("div");
     const step = it.assignment && it.assignment.status === "en_route" ? "On the way" : null;
-    b.append(ui.el("h3", {}, `${it.food_type} — ${it.quantity} ${it.unit}`), ui.statusChip(it.status));
+    b.append(ui.el("h3", {}, `${it.food_type} - ${it.quantity} ${it.unit}`), ui.statusChip(it.status));
     if (step) b.append(ui.el("span", { class: "pill" }, step));
     const r = it.restaurant;
     const meta = ui.el("div", { class: "meta" });
@@ -208,7 +208,7 @@
 
     window.FRSStorageRender = (items) => {
       recList.replaceChildren();
-      for (const r of recipients) recList.append(ui.el("div", { class: "doc" }, `${r.name} — ${KIND[r.kind]} — ${r.address}`));
+      for (const r of recipients) recList.append(ui.el("div", { class: "doc" }, `${r.name} - ${KIND[r.kind]} - ${r.address}`));
       if (!recipients.length) recList.append(ui.el("p", { class: "note" }, "No recipients yet."));
 
       stock.replaceChildren();
@@ -216,11 +216,11 @@
       if (!live.length) stock.append(ui.el("p", { class: "note" }, "Nothing in storage."));
       for (const s of live) {
         const c = ui.el("div", { class: "card" });
-        c.append(ui.el("strong", {}, `${s.food_type} — ${s.remaining_quantity} of ${s.stored_quantity} ${s.unit} left`));
+        c.append(ui.el("strong", {}, `${s.food_type} - ${s.remaining_quantity} of ${s.stored_quantity} ${s.unit} left`));
         c.append(ui.el("div", { class: "meta" }, `At ${s.location} · best before ${fmt(s.expires_at)}`));
         const msg = ui.el("div", { class: "msg" });
         if (s.expired) {
-          c.append(ui.el("div", { class: "callout err" }, "Past best-before time — do not distribute. Record it as disposed."));
+          c.append(ui.el("div", { class: "callout err" }, "Past best-before time - do not distribute. Record it as disposed."));
         } else {
           const g = ui.el("div", { class: "grid2" });
           const [rw, rec] = select(ui, recipients.map((r) => [r.id, r.name]), "Give to");

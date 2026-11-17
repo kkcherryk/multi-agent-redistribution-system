@@ -1,7 +1,7 @@
 """Public impact totals for the landing page.
 
-The only core route that needs no service key besides /health. It returns counts and sums — never names,
-places, phone numbers or anything that identifies an account or a listing — so it is safe to show publicly.
+The only core route that needs no service key besides /health. It returns counts and sums - never names,
+places, phone numbers or anything that identifies an account or a listing - so it is safe to show publicly.
 """
 from __future__ import annotations
 

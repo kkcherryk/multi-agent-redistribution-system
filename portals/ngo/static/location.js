@@ -41,7 +41,7 @@
       try {
         await api("/location", { method: "PUT", body: JSON.stringify({
           latitude: pending.coords.latitude, longitude: pending.coords.longitude, accuracy_m: pending.coords.accuracy }) });
-        show(`Sharing — last sent ${new Date().toLocaleTimeString()}`, true);
+        show(`Sharing - last sent ${new Date().toLocaleTimeString()}`, true);
       } catch (e) {
         show(e.message);
         if (/only while/.test(e.message)) stopSharing(false);

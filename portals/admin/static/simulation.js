@@ -56,7 +56,7 @@
       tr.append(ui.el("td", { title: m.unit }, `${m.label} (${m.unit})`));
       names.forEach((n, i) => {
         const s = result.summary[n].metrics[k];
-        const td = ui.el("td", {}, s.mean === null ? "—" : `${s.mean}${s.spread ? " ± " + s.spread : ""}`);
+        const td = ui.el("td", {}, s.mean === null ? "-" : `${s.mean}${s.spread ? " ± " + s.spread : ""}`);
         if (s.mean !== null && s.mean === best && valid.length > 1) td.style.fontWeight = "600";
         tr.append(td);
       });

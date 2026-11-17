@@ -130,7 +130,7 @@
     $("welcome").textContent = "Welcome, " + acc.display_name;
     const dl = $("profile");
     dl.replaceChildren();
-    const rows = [["Role", acc.role], ["Email", acc.email], ["Phone", acc.phone || "—"], ["Application", "status"],
+    const rows = [["Role", acc.role], ["Email", acc.email], ["Phone", acc.phone || "-"], ["Application", "status"],
                   ["Member since", new Date(acc.created_at).toLocaleString()]];
     if (acc.badges && Object.keys(acc.badges).length) rows.splice(4, 0, ["Status marks", "badges"]);
     for (const [k, v] of rows) {

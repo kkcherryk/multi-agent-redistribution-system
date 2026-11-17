@@ -111,7 +111,7 @@ def _result(successes: float, failures: float, reasons: list[str], flags: list[s
     score = beta_score(successes, failures)
     conf = confidence(successes + failures)
     if score < LOW_SCORE and conf != "low":
-        flags.append(f"Low score ({score:.0f}) — review the history before deciding anything")
+        flags.append(f"Low score ({score:.0f}) - review the history before deciding anything")
     return {"score": score, "confidence": conf, "events": successes + failures, "based_on": _plural(count, unit),
             "reasons": reasons, "flags": flags,
             "method": "(successes + 1) / (total + 2) x 100; decision support only"}

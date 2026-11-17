@@ -29,7 +29,7 @@ def _require(assignment: Assignment, *allowed: str, action: str) -> None:
 
 def _not_expired(listing: FoodListing, action: str) -> None:
     if listing.expires_at <= utcnow():
-        raise RuleError(f"this food passed its best-before time; it cannot be {action} — record it as disposed", 409)
+        raise RuleError(f"this food passed its best-before time; it cannot be {action} - record it as disposed", 409)
 
 
 # ---------------------------------------------------------------- before collection
@@ -73,7 +73,7 @@ def inspect(db: Session, agent: Account, listing_id: str, *, decision: str, actu
         a.status, listing.status = AssignmentStatus.REJECTED, ListingStatus.REJECTED
     elif decision == "collect":
         if observed_condition == "spoiled":
-            raise RuleError("spoiled food cannot be collected — reject it instead", 422)
+            raise RuleError("spoiled food cannot be collected - reject it instead", 422)
         _not_expired(listing, "collected")
         if actual_quantity is None or actual_quantity <= 0:
             raise RuleError("enter the quantity you actually collected", 422)
@@ -176,7 +176,7 @@ def distribute(db: Session, agent: Account, item_id: str, *, recipient_id: str, 
                received_by: str, notes: str | None) -> Handover:
     item = _storage_item(db, agent, item_id)
     if item.expires_at <= utcnow():
-        raise RuleError("this stock is past its best-before time — record it as disposed", 409)
+        raise RuleError("this stock is past its best-before time - record it as disposed", 409)
     recipient = _recipient(db, agent, recipient_id)
     if quantity is None or quantity <= 0 or quantity > item.remaining_quantity + 1e-9:
         raise RuleError(f"quantity must be between 0 and the {item.remaining_quantity:g} {item.unit} in stock", 422)
