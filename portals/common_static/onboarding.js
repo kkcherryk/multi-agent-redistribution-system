@@ -60,7 +60,8 @@
     box.append(ui.el("label", {}, "Location"));
     const hint = ui.el("p", { class: "note loc-hint" });
     const mapEl = ui.el("div", { class: "loc-map", hidden: "" });  // opens only after "Use my current location"
-    const locate = ui.el("button", { type: "button", class: "loc-btn" }, "📍 Use my current location");
+    const locate = ui.el("button", { type: "button", class: "loc-btn" }, "Use my current location");
+    locate.insertAdjacentHTML("afterbegin", '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.4"/></svg>');
     const status = ui.el("span", { class: "note loc-status" });
     const row = ui.el("div", { class: "row" });
     row.append(locate, status);

@@ -27,7 +27,7 @@
 
     let active = false;
     function drawToggle() {
-      toggle.textContent = active ? "✔ I do backup collections (turn off)" : "Offer backup collections";
+      toggle.textContent = active ? "✓ I do backup collections (turn off)" : "Offer backup collections";
       toggle.className = active ? "on-green" : "primary";
       toggle.style.cssText = "width:auto;margin-top:0";
     }

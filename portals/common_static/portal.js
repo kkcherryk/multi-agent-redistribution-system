@@ -35,7 +35,7 @@
   // Module 5 status marks. Verified marks carry a tick; colours come from the core service.
   function badge(b) {
     if (!b) return el("span");
-    const tick = ["Verified", "Verified NGO"].includes(b.label) ? "✔ " : (b.label === "Available" ? "● " : (b.label === "Unavailable" ? "● " : ""));
+    const tick = ["Verified", "Verified NGO"].includes(b.label) ? "✓ " : (b.label === "Available" ? "● " : (b.label === "Unavailable" ? "● " : ""));
     return el("span", { class: "badge " + b.color, title: b.label }, tick + b.label);
   }
 
@@ -70,7 +70,8 @@
   function ensureBell() {
     if ($("bell")) return;
     const wrap = el("div", { class: "bell-wrap" });
-    const btn = el("button", { id: "bell", type: "button", "aria-label": "Notifications", "aria-expanded": "false" }, "🔔");
+    const btn = el("button", { id: "bell", type: "button", "aria-label": "Notifications", "aria-expanded": "false" }, "");
+    btn.insertAdjacentHTML("afterbegin", '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 1.8h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg>');
     const box = el("div", { id: "inbox", class: "hidden", role: "dialog", "aria-label": "Notifications" });
     wrap.append(btn, box);
     $("logout").before(wrap);
