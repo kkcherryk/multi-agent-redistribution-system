@@ -139,3 +139,11 @@ main:has(#auth:not(.hidden))::before{content:var(--auth-quote,"Every meal saved 
 @media (max-width:560px){header{padding:10px 16px}header h1{font-size:.95rem}main{padding:24px 16px 48px}.panel{padding:22px 18px}}
 @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+/* location picker (restaurant + NGO profile) */
+.loc-picker .loc-hint{margin:2px 0 8px}
+.loc-map{height:300px;border-radius:16px;box-shadow:var(--shadow);z-index:0}
+.loc-picker .row{margin-top:10px}
+.loc-btn{background:color-mix(in srgb,var(--accent) 12%,var(--card));border-color:transparent;color:var(--accent)}
+.loc-status{font-size:.85rem}
+textarea#pf-address{resize:vertical}
+@media (max-width:560px){.loc-map{height:240px}}

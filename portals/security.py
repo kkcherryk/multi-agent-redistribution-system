@@ -15,7 +15,7 @@ PAGE_CSP = ("default-src 'self'; "
             "script-src 'self' 'unsafe-inline' https://unpkg.com https://cdn.jsdelivr.net; "
             "style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; "
             "img-src 'self' data: blob: https://tile.openstreetmap.org https://*.tile.openstreetmap.org https://unpkg.com https://images.unsplash.com; "
-            "connect-src 'self'; font-src 'self' data: https://fonts.gstatic.com; object-src 'none'; base-uri 'self'; "
+            "connect-src 'self' https://nominatim.openstreetmap.org; font-src 'self' data: https://fonts.gstatic.com; object-src 'none'; base-uri 'self'; "
             "form-action 'self'; frame-ancestors 'none'")
 SECURITY_HEADERS = {
     "X-Content-Type-Options": "nosniff",
