@@ -57,15 +57,14 @@
 
   function locationPicker(form, label, profile, editable, msg) {
     const box = ui.el("div", { class: "loc-picker", style: "grid-column:1/-1" });
-    box.append(ui.el("label", {}, "Location on the map"));
-    const hint = ui.el("p", { class: "note loc-hint" },
-      editable ? "Tap the map or drag the pin to your exact entrance, or use your current location." : "Your saved location.");
-    const mapEl = ui.el("div", { class: "loc-map" });
+    box.append(ui.el("label", {}, "Location"));
+    const hint = ui.el("p", { class: "note loc-hint" });
+    const mapEl = ui.el("div", { class: "loc-map", hidden: "" });  // opens only after "Use my current location"
     const locate = ui.el("button", { type: "button", class: "loc-btn" }, "📍 Use my current location");
     const status = ui.el("span", { class: "note loc-status" });
     const row = ui.el("div", { class: "row" });
     row.append(locate, status);
-    box.append(hint, mapEl, row);
+    box.append(hint, row, mapEl);
 
     const [addr0, near0] = ((profile && profile.address) || "").split(NEAR);
     const addrWrap = ui.el("div", { style: "grid-column:1/-1" });
@@ -86,6 +85,9 @@
     let pos = profile && profile.latitude != null ? [profile.latitude, profile.longitude] : null;
     let map = null, marker = null, lookupTimer = null, lookupSeq = 0;
     const setStatus = (t) => { status.textContent = t; };
+    hint.textContent = !editable ? (pos ? "Your location is saved." : "")
+      : pos ? "Your location is saved. Use your current location again to change it."
+      : "Use your current location — a map opens so you can check the pin and adjust it.";
 
     function place(latlng, fromUser) {
       pos = [Number(latlng[0].toFixed(6)), Number(latlng[1].toFixed(6))];
@@ -108,20 +110,23 @@
       }, 700);  // wait until the pin settles; Nominatim allows about one lookup a second
     }
 
-    if (!window.L) {
-      mapEl.replaceWith(ui.el("p", { class: "msg err" }, "The map could not load (no internet connection?). Your current location can still be used."));
-    } else {
+    function openMap() {
+      if (map || !window.L) return;
+      mapEl.hidden = false;
+      hint.textContent = "Drag the pin or tap the map to mark your exact entrance.";
       map = L.map(mapEl, { scrollWheelZoom: false }).setView(pos || DEFAULT_CENTER, pos ? 16 : 12);
       L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19, referrerPolicy: "strict-origin-when-cross-origin",
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' }).addTo(map);
       if (pos) place(pos, false);
-      if (editable) map.on("click", (e) => place([e.latlng.lat, e.latlng.lng], true));
+      map.on("click", (e) => place([e.latlng.lat, e.latlng.lng], true));
       setTimeout(() => map.invalidateSize(), 50);  // the container was sized after the map was created
     }
 
     locate.addEventListener("click", () => {
-      if (!navigator.geolocation) return fail(msg, new Error("Location is not available in this browser."));
+      openMap();  // the map appears now, so the pin can be checked or placed by hand if location fails
+      if (!window.L) setStatus("The map could not load (no internet connection?).");
+      if (!navigator.geolocation) return fail(msg, new Error("Location is not available in this browser. Tap your place on the map."));
       setStatus("Getting your location…");
       navigator.geolocation.getCurrentPosition(
         (p) => {

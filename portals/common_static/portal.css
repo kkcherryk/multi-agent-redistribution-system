@@ -141,7 +141,8 @@ main:has(#auth:not(.hidden))::before{content:var(--auth-quote,"Every meal saved 
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 /* location picker (restaurant + NGO profile) */
 .loc-picker .loc-hint{margin:2px 0 8px}
-.loc-map{height:300px;border-radius:16px;box-shadow:var(--shadow);z-index:0}
+.loc-map{height:300px;margin-top:14px;border-radius:16px;box-shadow:var(--shadow);z-index:0;animation:rise .45s var(--ease) both}
+.loc-map[hidden]{display:none}
 .loc-picker .row{margin-top:10px}
 .loc-btn{background:color-mix(in srgb,var(--accent) 12%,var(--card));border-color:transparent;color:var(--accent)}
 .loc-status{font-size:.85rem}
