@@ -204,14 +204,22 @@
 <!-- IMPACT -->
 <section class="impact" id="impact">
   <div class="wrap">
-    <h2 class="section-title center reveal">Built to move food <em>fast</em></h2>
-    <p class="section-lead center reveal d1">What the platform does for every single donation.</p>
-    <div class="stats">
-      <div class="stat reveal"><b class="count" data-to="4">0</b><span>agents working round the clock</span></div>
-      <div class="stat reveal d1"><b class="count" data-to="2">0</b><span>simple portals — one for restaurants, one for NGOs</span></div>
-      <div class="stat reveal d2"><b class="count" data-to="7">0</b><span>tracked steps from kitchen to plate</span></div>
-      <div class="stat reveal d3"><b class="count" data-to="100" data-suffix="%">0</b><span>partners verified before they join</span></div>
+    <h2 class="section-title center reveal">Our impact <em>so far</em></h2>
+    <p class="section-lead center reveal d1">Live totals from the platform — every number is a real donation that reached people.</p>
+    <div class="stats" id="stats" aria-busy="true">
+      <div class="stat s-meals reveal"><i aria-hidden="true">🍛</i><b class="count" data-key="meals_delivered">—</b><span>meals delivered</span><small class="stat-extra" id="kg-extra" hidden></small></div>
+      <div class="stat s-done reveal d1"><i aria-hidden="true">✅</i><b class="count" data-key="donations_completed">—</b><span>donations completed</span></div>
+      <div class="stat s-rest reveal d2"><i aria-hidden="true">🏪</i><b class="count" data-key="restaurants">—</b><span>restaurants donating</span></div>
+      <div class="stat s-ngo reveal d3"><i aria-hidden="true">🤝</i><b class="count" data-key="ngos">—</b><span>NGOs on board</span></div>
     </div>
+    <div class="impact-empty" id="impact-empty" hidden>
+      <span class="ie-icon" aria-hidden="true">🌱</span>
+      <h3>Be the first to donate</h3>
+      <p id="impact-empty-text">No donations have been completed yet. The very first meal saved could be yours.</p>
+      <a class="btn btn-yellow" href="{{RESTAURANT_URL}}">Donate surplus food</a>
+    </div>
+    <p class="impact-live" id="impact-live" hidden><span class="pulse" aria-hidden="true"></span><span id="impact-live-text"></span></p>
+    <p class="impact-error" id="impact-error" hidden>Impact numbers are unavailable right now. Please check back soon.</p>
   </div>
 </section>
 

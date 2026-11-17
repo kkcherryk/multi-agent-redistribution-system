@@ -10,7 +10,7 @@ from portals.security import AttemptLimiter
 from tests.conftest import HOST_EMAIL, HOST_PASSWORD, applicant
 
 # Routes that are deliberately open (no sign-in / no service key).
-PUBLIC_CORE = {"/health"}
+PUBLIC_CORE = {"/health", "/public/impact"}  # impact: totals only, nothing personal
 PUBLIC_PORTAL = {"/", "/health", "/api/portal", "/api/login", "/api/register", "/api/logout"}
 
 

@@ -2,10 +2,12 @@
 from __future__ import annotations
 
 import html
+import time
 from pathlib import Path
+from typing import Callable
 
 from fastapi import FastAPI
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 STATIC = Path(__file__).resolve().parent / "static"
@@ -17,7 +19,19 @@ LANDING_CSP = ("default-src 'self'; script-src 'self'; "
                "connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'")
 
 
-def create_landing_app(portal_urls: dict[str, str]) -> FastAPI:
+def core_impact_fetcher(core_url: str) -> Callable[[], dict]:
+    """Read the public impact totals from the core service."""
+    import httpx
+
+    def fetch() -> dict:
+        r = httpx.get(core_url.rstrip("/") + "/public/impact", timeout=5)
+        r.raise_for_status()
+        return r.json()
+    return fetch
+
+
+def create_landing_app(portal_urls: dict[str, str], fetch_impact: Callable[[], dict] | None = None,
+                       cache_seconds: float = 30) -> FastAPI:
     app = FastAPI(title="FRS landing")
     from portals import security
     security.install(app)
@@ -33,6 +47,22 @@ def create_landing_app(portal_urls: dict[str, str]) -> FastAPI:
     def health():
         return {"status": "ok", "service": "landing"}
 
+    cache: dict = {"at": 0.0, "data": None}
+
+    @app.get("/api/impact")
+    def impact():
+        """Totals for the impact counters, cached briefly so page views don't hammer the core."""
+        if fetch_impact is None:
+            return JSONResponse({"detail": "Impact totals are not available."}, status_code=503)
+        now = time.monotonic()
+        if cache["data"] is None or now - cache["at"] > cache_seconds:
+            try:
+                cache["data"], cache["at"] = fetch_impact(), now
+            except Exception:  # core down: serve the last good totals if we have them
+                if cache["data"] is None:
+                    return JSONResponse({"detail": "Impact totals are not available right now."}, status_code=503)
+        return cache["data"]
+
     app.mount("/static", StaticFiles(directory=STATIC), name="landing-static")
     return app
 
@@ -40,4 +70,5 @@ def create_landing_app(portal_urls: dict[str, str]) -> FastAPI:
 def build_default_app() -> FastAPI:
     from shared.config import get_settings
 
-    return create_landing_app(get_settings().portal_urls)
+    s = get_settings()
+    return create_landing_app(s.portal_urls, fetch_impact=core_impact_fetcher(s.core_url))

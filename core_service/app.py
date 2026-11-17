@@ -321,6 +321,10 @@ def create_core_app(db_url: str, service_keys: dict[str, str], upload_dir: Path 
 
     app.include_router(build_agents_router(get_db=get_db, caller_portal=caller_portal, require_admin=require_admin,
                                            runtime=runtime, pickup_view=listings_router.pickup_view))
+
+    # ------------------------------------------------------------------ public impact totals (landing page)
+    from . import impact
+    app.include_router(impact.build_router(get_db=get_db))
     return app
 
 

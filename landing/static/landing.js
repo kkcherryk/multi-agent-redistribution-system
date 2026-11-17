@@ -79,22 +79,63 @@
   addEventListener("scroll", () => { if (!ticking) { ticking = true; requestAnimationFrame(frame); } }, { passive: true });
   addEventListener("resize", frame); frame();
 
-  // counters
-  const cio = new IntersectionObserver((entries) => {
-    for (const en of entries) if (en.isIntersecting) {
-      const el = en.target, to = +el.dataset.to, suf = el.dataset.suffix || "";
-      cio.unobserve(el);
-      if (reduce) { el.textContent = to + suf; continue; }
-      const t0 = performance.now(), dur = 1600;
-      const tick = (t) => {
-        const k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 3);
-        el.textContent = Math.round(to * e) + suf;
-        if (k < 1) requestAnimationFrame(tick);
-      };
-      requestAnimationFrame(tick);
+  // impact counters: real totals from the platform, refreshed every minute
+  const fmt = (n) => Math.round(n).toLocaleString("en-IN");
+  const plural = (n, word) => fmt(n) + " " + word + (n === 1 ? "" : "s");
+  function animate(el, to) {
+    const from = +(el.dataset.now || 0);
+    el.dataset.now = to;
+    if (reduce || from === to) { el.textContent = fmt(to); return; }
+    const t0 = performance.now(), dur = from ? 900 : 1600;
+    const tick = (t) => {
+      const k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 3);
+      el.textContent = fmt(from + (to - from) * e);
+      if (k < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }
+  const statsBox = $("#stats");
+  let statsSeen = false, latest = null;
+  function paint() {
+    if (!latest || !statsSeen) return;
+    $$("#stats .count").forEach((el) => animate(el, latest[el.dataset.key] || 0));
+  }
+  function showImpact(d) {
+    latest = d;
+    const empty = !d.donations_completed;
+    statsBox.removeAttribute("aria-busy");
+    $("#impact-error").hidden = true;
+    statsBox.hidden = empty;
+    $("#impact-empty").hidden = !empty;
+    if (empty) {
+      $("#impact-empty-text").textContent = (d.restaurants || d.ngos)
+        ? plural(d.restaurants, "restaurant") + " and " + plural(d.ngos, "NGO") + " are ready. The very first meal saved could be yours."
+        : "No donations have been completed yet. The very first meal saved could be yours.";
     }
-  }, { threshold: 0.5 });
-  $$(".count").forEach((n) => cio.observe(n));
+    const kg = $("#kg-extra");
+    kg.hidden = !(d.kg_delivered > 0);
+    if (d.kg_delivered > 0) kg.textContent = "+ " + d.kg_delivered.toLocaleString("en-IN") + " kg of food";
+    const parts = [];
+    if (d.now_waiting) parts.push(plural(d.now_waiting, "donation") + " waiting for pickup");
+    if (d.now_on_the_way) parts.push(fmt(d.now_on_the_way) + " on the way");
+    $("#impact-live").hidden = !parts.length;
+    if (parts.length) $("#impact-live-text").textContent = "Right now: " + parts.join(" · ");
+    paint();
+  }
+  async function loadImpact() {
+    try {
+      const r = await fetch("/api/impact", { headers: { Accept: "application/json" } });
+      if (!r.ok) throw new Error(String(r.status));
+      showImpact(await r.json());
+    } catch {
+      if (!latest) { statsBox.hidden = true; $("#impact-error").hidden = false; }
+    }
+  }
+  new IntersectionObserver((entries, obs) => {
+    if (entries.some((e) => e.isIntersecting)) { statsSeen = true; paint(); obs.disconnect(); }
+  }, { threshold: 0.3 }).observe($("#impact"));
+  loadImpact();
+  setInterval(() => { if (!document.hidden) loadImpact(); }, 60000);
 
   $("#year").textContent = new Date().getFullYear();
 })();
