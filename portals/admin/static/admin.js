@@ -202,7 +202,8 @@
 
   function showTab(name) {
     for (const b of document.querySelectorAll("#admin-tabs button")) b.classList.toggle("active", b.dataset.tab === name);
-    for (const t of ["map", "queue", "listings", "agents-ai", "trust", "simulation", "storage", "agents", "accounts", "events", "privacy"]) $("tab-" + t).classList.toggle("hidden", t !== name);
+    for (const t of ["overview", "map", "queue", "listings", "agents-ai", "trust", "simulation", "storage", "agents", "accounts", "events", "privacy"]) $("tab-" + t).classList.toggle("hidden", t !== name);
+    if (name === "overview" && window.FRSOverview) window.FRSOverview.show(ui, showTab);
     if (name === "simulation" && window.FRSSimulation) window.FRSSimulation.show(ui);
     if (name === "trust" && window.FRSTrust) window.FRSTrust.show(ui);
     if (name === "privacy" && window.FRSPrivacy) window.FRSPrivacy.show(ui);
@@ -217,6 +218,7 @@
       window.__adminWired = true;
       document.querySelectorAll("#admin-tabs button").forEach((b) => b.addEventListener("click", () => showTab(b.dataset.tab)));
       $("queue-status").addEventListener("change", () => loadQueue());
+      if (window.FRSOverview) window.FRSOverview.show(ui, showTab);  // the page that opens first
     }
     loadAll().catch((e) => console.error(e));
   };

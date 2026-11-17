@@ -69,7 +69,7 @@
     btn.insertAdjacentHTML("afterbegin", '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 1.8h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg>');
     const box = el("div", { id: "inbox", class: "hidden", role: "dialog", "aria-label": "Notifications" });
     wrap.append(btn, box);
-    $("logout").before(wrap);
+    (document.querySelector("header .acct") || $("logout")).before(wrap);
     btn.addEventListener("click", async (e) => {
       e.stopPropagation();
       const opening = box.classList.contains("hidden");
