@@ -22,7 +22,7 @@ def create_landing_app(portal_urls: dict[str, str]) -> FastAPI:
     from portals import security
     security.install(app)
     page = (STATIC / "index.html").read_text(encoding="utf-8")
-    for key, token in (("restaurant", "RESTAURANT_URL"), ("ngo", "NGO_URL"), ("admin", "ADMIN_URL")):
+    for key, token in (("restaurant", "RESTAURANT_URL"), ("ngo", "NGO_URL")):  # the host portal is never linked publicly
         page = page.replace("{{" + token + "}}", html.escape(portal_urls[key]))
 
     @app.get("/", response_class=HTMLResponse)

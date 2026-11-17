@@ -99,11 +99,14 @@ def test_frontends_served(portals):
     assert "register-form" in portals["restaurant"].get("/").text
 
 
-def test_landing_offers_three_portals():
+def test_landing_offers_restaurant_and_ngo_but_never_the_host():
     urls = {"admin": "http://h:8001", "restaurant": "http://h:8002", "ngo": "http://h:8003"}
     page = TestClient(create_landing_app(urls)).get("/").text
-    for portal, url in urls.items():
-        assert f'href="{url}"' in page and f'data-portal="{portal}"' in page
+    for portal in ("restaurant", "ngo"):
+        assert f'href="{urls[portal]}"' in page and f'data-portal="{portal}"' in page
+    # The host portal is a separate site: the public page neither links to it nor names it.
+    assert urls["admin"] not in page and 'data-portal="admin"' not in page
+    assert "host" not in page.lower()
 
 
 def test_pages_and_scripts_are_revalidated(portals):
